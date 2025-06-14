@@ -1,29 +1,33 @@
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <stdio.h>
 
-const unsigned int SCREEN_WIDTH = 640u;
-const unsigned int SCREEN_HEIGHT = 480u;
+const unsigned int SCREEN_WIDTH = 1024u;
+const unsigned int SCREEN_HEIGHT = 768u;
 
 int main(int argc, char* argv[]) {
-	SDL_Window* window = NULL;
-	SDL_Surface* screenSurface = NULL;
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 		return -1;
 	}
-	window = SDL_CreateWindow("SDL Tutorial", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+	SDL_Window* window = SDL_CreateWindow("SDL Tutorial", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	if (window == NULL) {
 		fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		return -2;
 	}
 
-	screenSurface = SDL_GetWindowSurface(window);
-	SDL_FillSurfaceRect(
-		screenSurface,
-		NULL,
-		SDL_MapRGB(SDL_GetPixelFormatDetails(screenSurface->format), NULL, 0xFF, 0xFF, 0xFF)
-	);
+	SDL_Surface* screen_surface = SDL_GetWindowSurface(window);
+
+	SDL_Surface* image = IMG_Load("assets/image.png");
+	if (image == NULL) {
+		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+		return -2;
+	}
+
+	SDL_Surface* optimized_surface = SDL_ConvertSurface(image, screen_surface->format);
+	SDL_BlitSurface(optimized_surface, NULL, screen_surface, NULL);
 	SDL_UpdateWindowSurface(window);
+
 	SDL_Event e;
 	bool quit = false;
 	while (quit == false) {
@@ -34,6 +38,8 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	SDL_DestroySurface(optimized_surface);
+	SDL_DestroySurface(image);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 
