@@ -66,7 +66,6 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 		return -3;
 	}
-
 	SDL_BlitSurface(
 		image, NULL, screen_surface, &(SDL_Rect) {
 			.x = (screen_surface->w / 2) - (image->w / 2),
@@ -74,6 +73,7 @@ int main(int argc, char* argv[]) {
 			.w = image->w,
 			.h = image->h,
 		});
+	SDL_DestroySurface(image);
 
 	TTF_Font* font;
 	G00_LoadFont("assets/fonts/open-sans/OpenSans-Regular.ttf", 48.f, &font);
@@ -83,16 +83,17 @@ int main(int argc, char* argv[]) {
 	}
 	SDL_Surface* text;
 	G00_RenderText(font, "Hello, world!", 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF }, &text);
+	TTF_CloseFont(font);
+
 	SDL_BlitSurface(text, NULL, screen_surface, &(SDL_Rect) {
 		.x = (screen_surface->w / 2) - (text->w / 2),
 		.y = (screen_surface->h) - (text->h),
 		.w = text->w,
 		.h = text->h,
 	});
+	SDL_DestroySurface(text);
 
 	SDL_UpdateWindowSurface(window);
-	SDL_DestroySurface(image);
-
 	SDL_Event e;
 	bool quit = false;
 	while (quit == false) {
@@ -102,7 +103,6 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-
 
 	SDL_DestroyWindow(window);
 	G00_TeardownFramework();
