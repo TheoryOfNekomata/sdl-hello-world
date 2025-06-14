@@ -13,7 +13,7 @@ Requirements:
 
 1. Create a [`thirdparty`](./thirdparty) folder in the root of the project.
 2. Download the [latest SDL development build for Visual Studio](https://github.com/libsdl-org/SDL/releases/latest).
-3. Extract the SDL build to the top level of [`thirdparty`](./thirdparty) while preserving the internal directory structure inside the archive (do not create an enclosing folder upon extracting).
+3. Extract the SDL build to the top level of [`thirdparty`](./thirdparty). Observe the expected directory structure below.
 4. Compile the project using CMake.
 
 You should have the following directory structure:
@@ -22,7 +22,7 @@ You should have the following directory structure:
 sdl-hello-world/
   src/
   thirdparty/
-    SDL3-3.X.X/
+    SDL3/
       cmake/
       include/
       lib/
