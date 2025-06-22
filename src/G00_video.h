@@ -1,0 +1,65 @@
+#ifndef G00_VIDEO_H
+#define G00_VIDEO_H
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#define G00_VIDEO_MAX_LOADED_TEXTURES 16
+#define G00_VIDEO_MAX_LOADED_FONTS 8
+#define G00_VIDEO_MAX_LOADED_SPRITES 32
+
+struct G00_App;
+
+struct G00_VideoConfig {
+	unsigned int screen_width;
+	unsigned int screen_height;
+	float frames_per_second;
+	float millis_per_tick;
+};
+
+enum G00_VideoLoadedObjectType : unsigned char {
+	G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN,
+	G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE,
+};
+
+struct G00_VideoSprite {
+	enum G00_VideoLoadedObjectType type;
+	unsigned int index;
+	SDL_FRect rect;
+};
+
+struct G00_Video {
+	struct G00_VideoConfig config;
+	unsigned long long ticks;
+	SDL_Window* window;
+	SDL_Renderer* renderer;
+	struct G00_App* app;
+	SDL_Texture* loaded_textures[G00_VIDEO_MAX_LOADED_TEXTURES];
+	TTF_Font* loaded_fonts[G00_VIDEO_MAX_LOADED_FONTS];
+	struct G00_VideoSprite loaded_sprites[G00_VIDEO_MAX_LOADED_SPRITES];
+};
+
+void G00_VideoTeardown(struct G00_Video*);
+
+enum G00_VideoInitResult {
+	G00_VIDEO_INIT_RESULT_OK = 0,
+	G00_VIDEO_INIT_RESULT_UNKNOWN_VIDEO_STATE = -1,
+	G00_VIDEO_INIT_RESULT_UNBOUND_VIDEO_STATE = -2,
+	G00_VIDEO_INIT_RESULT_COULD_NOT_CREATE_WINDOW = -3,
+	G00_VIDEO_INIT_RESULT_COULD_NOT_CREATE_RENDERER = -3,
+};
+
+enum G00_VideoInitResult G00_VideoInit(struct G00_Video*, struct G00_VideoConfig);
+
+void G00_VideoUpdate(struct G00_Video*, unsigned long);
+
+int G00_VideoLoadImageObject(struct G00_Video*, const char*, unsigned int* out0);
+
+int G00_VideoLoadTextObject(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
+
+void G00_VideoUnloadObject(struct G00_Video*, unsigned int);
+
+int G00_VideoLoadFont(struct G00_Video*, const char*, float, unsigned int* out0);
+
+#endif

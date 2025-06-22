@@ -3,7 +3,7 @@ project(sdl_hello_world C)
 
 set(CMAKE_C_STANDARD 23)
 
-file(GLOB sources src/*.c)
+file(GLOB sources src/*.h src/*.c)
 
 add_executable(${PROJECT_NAME} ${sources})
 
@@ -11,6 +11,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE thirdparty/SDL3/include third
 target_link_directories(${PROJECT_NAME} PRIVATE thirdparty/SDL3/lib/x64 thirdparty/SDL3_image/lib/x64 thirdparty/SDL3_ttf/lib/x64)
 
 target_link_libraries(${PROJECT_NAME} SDL3 SDL3_image SDL3_ttf)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/src/default.cfg"
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
 if (WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -28,6 +33,8 @@ if (WIN32)
             "${PROJECT_SOURCE_DIR}/thirdparty/SDL3_ttf/lib/x64/SDL3_ttf.dll"
             $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 endif ()
+
+add_definitions(-DG00_APP_NAME="${PROJECT_NAME}")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
