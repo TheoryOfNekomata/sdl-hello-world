@@ -42,6 +42,61 @@ int G00_ConfigCommandSetIdealFps(char args[255], struct G00_Config* out0_config)
 	return 0;
 }
 
+int G00_ConfigCommandSetMemoryPoolSize(char args[255], struct G00_Config* out0_config) {
+	sscanf(args, "%llu", &out0_config->memory.pool_size_bytes);
+
+	if (!(10485760u <= out0_config->memory.pool_size_bytes && out0_config->memory.pool_size_bytes <= 2147483648u)) {
+		out0_config->memory.pool_size_bytes = 10485760u;
+		return 1;
+	}
+
+	return 0;
+}
+
+int G00_ConfigCommandSetMemoryMaxEntries(char args[255], struct G00_Config* out0_config) {
+	sscanf(args, "%u", &out0_config->memory.pool_max_entries);
+
+	if (!(256u <= out0_config->memory.pool_max_entries && out0_config->memory.pool_max_entries <= 131072u)) {
+		out0_config->memory.pool_max_entries = 256u;
+		return 1;
+	}
+
+	return 0;
+}
+
+int G00_ConfigCommandSetVideoMaxLoadedTextures(char args[255], struct G00_Config* out0_config) {
+	sscanf(args, "%u", &out0_config->video.max_loaded_textures);
+
+	if (!(16u <= out0_config->video.max_loaded_textures && out0_config->video.max_loaded_textures <= 256u)) {
+		out0_config->video.max_loaded_textures = 16u;
+		return 1;
+	}
+
+	return 0;
+}
+
+int G00_ConfigCommandSetVideoMaxLoadedSprites(char args[255], struct G00_Config* out0_config) {
+	sscanf(args, "%u", &out0_config->video.max_loaded_sprites);
+
+	if (!(16u <= out0_config->video.max_loaded_sprites && out0_config->video.max_loaded_sprites <= 256u)) {
+		out0_config->video.max_loaded_sprites = 16u;
+		return 1;
+	}
+
+	return 0;
+}
+
+int G00_ConfigCommandSetVideoMaxLoadedFonts(char args[255], struct G00_Config* out0_config) {
+	sscanf(args, "%u", &out0_config->video.max_loaded_fonts);
+
+	if (!(8u <= out0_config->video.max_loaded_fonts && out0_config->video.max_loaded_fonts <= 256u)) {
+		out0_config->video.max_loaded_fonts = 8u;
+		return 1;
+	}
+
+	return 0;
+}
+
 typedef int G00_ConfigCommandFunction(char*, struct G00_Config* out0);
 
 struct G00_ConfigCommandMappingEntry {
@@ -57,6 +112,26 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	{
 		.name = "ideal_fps",
 		.fn = G00_ConfigCommandSetIdealFps,
+	},
+	{
+		.name = "memory_pool_size_bytes",
+		.fn = G00_ConfigCommandSetMemoryPoolSize,
+	},
+	{
+		.name = "memory_pool_max_entries",
+		.fn = G00_ConfigCommandSetMemoryMaxEntries,
+	},
+	{
+		.name = "video_max_loaded_textures",
+		.fn = G00_ConfigCommandSetVideoMaxLoadedTextures,
+	},
+	{
+		.name = "video_max_loaded_fonts",
+		.fn = G00_ConfigCommandSetVideoMaxLoadedFonts,
+	},
+	{
+		.name = "video_max_loaded_sprites",
+		.fn = G00_ConfigCommandSetVideoMaxLoadedSprites,
 	},
 	{
 		.name = NULL,

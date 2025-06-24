@@ -30,7 +30,7 @@ target_link_libraries(${PROJECT_NAME} SDL3 SDL3_image SDL3_ttf)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${PROJECT_SOURCE_DIR}/src/default.cfg"
+        "${PROJECT_SOURCE_DIR}/src/default.app.cfg"
         $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

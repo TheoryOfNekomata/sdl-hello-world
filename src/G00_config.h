@@ -4,8 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "G00_video.h"
+#include "G00_memory.h"
 
 struct G00_Config {
+  struct G00_MemoryConfig memory;
   struct G00_VideoConfig video;
 };
 

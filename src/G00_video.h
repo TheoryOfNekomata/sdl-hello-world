@@ -5,10 +5,6 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-#define G00_VIDEO_MAX_LOADED_TEXTURES 16
-#define G00_VIDEO_MAX_LOADED_FONTS 8
-#define G00_VIDEO_MAX_LOADED_SPRITES 32
-
 struct G00_App;
 
 struct G00_VideoConfig {
@@ -17,6 +13,9 @@ struct G00_VideoConfig {
 	float aspect_ratio;
 	float frames_per_second;
 	float millis_per_tick;
+	unsigned char max_loaded_textures;
+	unsigned char max_loaded_fonts;
+	unsigned char max_loaded_sprites;
 };
 
 enum G00_VideoLoadedObjectType : unsigned char {
@@ -36,9 +35,9 @@ struct G00_Video {
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	struct G00_App* app;
-	SDL_Texture* loaded_textures[G00_VIDEO_MAX_LOADED_TEXTURES];
-	TTF_Font* loaded_fonts[G00_VIDEO_MAX_LOADED_FONTS];
-	struct G00_VideoSprite loaded_sprites[G00_VIDEO_MAX_LOADED_SPRITES];
+	SDL_Texture** loaded_textures;
+	TTF_Font** loaded_fonts;
+	struct G00_VideoSprite* loaded_sprites;
 };
 
 void G00_VideoTeardown(struct G00_Video*);

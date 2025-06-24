@@ -121,7 +121,7 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 												 }
 
 		memcpy(out0_asset_stream->data + offset, out_buffer + offset, out_size_processed);
-		for (unsigned int i = 0; i < G00_MEMORY_MAX_ENTRIES; i += 1) {
+		for (unsigned int i = 0; i < out0_asset_stream->config.pool_max_entries; i += 1) {
 			if (out0_asset_stream->entries[i].name != NULL) {
 				continue;
 			}

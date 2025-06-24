@@ -14,18 +14,21 @@ struct G00_App {
 
 enum G00_AppInitResult {
 	G00_APP_INIT_RESULT_OK = 0,
-	G00_APP_INIT_RESULT_DATABASE_ERROR = -1,
-	G00_APP_INIT_RESULT_FRAMEWORK_ERROR = -2,
-	G00_APP_INIT_RESULT_FONT_RENDERER_ERROR = -3,
-	G00_APP_INIT_RESULT_VIDEO_ERROR = -4,
+	G00_APP_INIT_RESULT_MEMORY_ERROR = -1,
+	G00_APP_INIT_RESULT_DATABASE_ERROR = -2,
+	G00_APP_INIT_RESULT_FRAMEWORK_ERROR = -3,
+	G00_APP_INIT_RESULT_FONT_RENDERER_ERROR = -4,
+	G00_APP_INIT_RESULT_VIDEO_ERROR = -5,
 };
 
 enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) {
-	G00_ConfigRead("default.cfg", &app->config);
-	G00_ConfigRead("autoexec.cfg", &app->config);
+	G00_ConfigRead("default.app.cfg", &app->config);
+	G00_ConfigRead("autoexec.app.cfg", &app->config);
 
-	app->memory.data = malloc(10485760); // 10MB
-	memset(app->memory.entries, 0, sizeof(app->memory.entries));
+	int memory_result = G00_MemoryInit(&app->memory, app->config.memory);
+	if (memory_result < 0) {
+		return G00_APP_INIT_RESULT_MEMORY_ERROR;
+	}
 
 	int sqlite_result = G00_DatabaseInit(&app->db);
 	if (sqlite_result < 0) {
@@ -56,8 +59,7 @@ void G00_AppTeardown(struct G00_App* app) {
 	TTF_Quit();
 	SDL_Quit();
 	G00_DatabaseTeardown(&app->db);
-	free(app->memory.data);
-	app->memory.data = NULL;
+	G00_MemoryTeardown(&app->memory);
 }
 
 int main(int argc, char* argv[]) {
