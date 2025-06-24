@@ -91,8 +91,15 @@ int main(int argc, char* argv[]) {
 		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 	}
 
+	app.video.loaded_sprites[image_sprite_index].rect = (SDL_FRect) {
+		.x = (app.config.video.screen_width / 2.f) - (app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->w / 2.f),
+		.y = (app.config.video.screen_height / 2.f) - (app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->h / 2.f),
+		.w = app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->h,
+	};
+
 	unsigned int font_asset_index;
-	if (G00_MemoryRetrieveIndex(&app.memory, "font.ttf", &font_asset_index) < 0) {
+	if (G00_MemoryRetrieveIndex(&app.memory, "font-ui.ttf", &font_asset_index) < 0) {
 		fprintf(stderr, "Unable to retrieve font!\n");
 		return -1;
 	}
@@ -114,13 +121,6 @@ int main(int argc, char* argv[]) {
 	} if (text_sprite_load_result > 0) {
 		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 	}
-
-	app.video.loaded_sprites[image_sprite_index].rect = (SDL_FRect) {
-		.x = (app.config.video.screen_width / 2.f) - (app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->w / 2.f),
-		.y = (app.config.video.screen_height / 2.f) - (app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->h / 2.f),
-		.w = app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->w,
-		.h = app.video.loaded_textures[app.video.loaded_sprites[image_sprite_index].index]->h,
-	};
 
 	app.video.loaded_sprites[text_sprite_index].rect = (SDL_FRect) {
 		.x = (app.config.video.screen_width / 2.f) - (app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].index]->w / 2.f),

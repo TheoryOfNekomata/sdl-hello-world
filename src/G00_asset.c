@@ -84,9 +84,11 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 
 	unsigned short* file_name = NULL;
 	size_t file_name_len = 0;
+
+	size_t processed_bytes_in_this_asset = 0;
 	for (unsigned int i = 0; i < db.NumFiles; i += 1) {
 		size_t offset = 0;
-		size_t out_size_processed = 0;
+		size_t asset_data_processed_bytes = 0;
 		if (SzArEx_IsDir(&db, i)) {
 			continue;
 		}
@@ -112,15 +114,17 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 		// TODO how to first read metadata of archive
 
 		if (SzArEx_Extract(&db, &look_stream.vt, i, &block_index, &out_buffer, &out_buffer_size, &offset,
-												 &out_size_processed, &alloc_imp, &alloc_imp) != SZ_OK) {
+												 &asset_data_processed_bytes, &alloc_imp, &alloc_imp) != SZ_OK) {
 			ISzAlloc_Free(&alloc_imp, out_buffer);
 			SzFree(NULL, file_name);
 			SzArEx_Free(&db, &alloc_imp);
 			File_Close(&archive_stream.file);
 			return -3;
-												 }
+		}
 
-		memcpy(out0_asset_stream->data + offset, out_buffer + offset, out_size_processed);
+		size_t out_offset = offset + out0_asset_stream->asset_data_processed_bytes;
+		processed_bytes_in_this_asset += asset_data_processed_bytes;
+		memcpy(out0_asset_stream->data + out_offset, out_buffer + offset, asset_data_processed_bytes);
 		for (unsigned int i = 0; i < out0_asset_stream->config.pool_max_entries; i += 1) {
 			if (out0_asset_stream->entries[i].name != NULL) {
 				continue;
@@ -128,8 +132,8 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 
 			out0_asset_stream->entries[i].name = malloc(buf.size);
 			memcpy(out0_asset_stream->entries[i].name, buf.data, buf.size);
-			out0_asset_stream->entries[i].len = out_size_processed;
-			out0_asset_stream->entries[i].offset = offset;
+			out0_asset_stream->entries[i].len = asset_data_processed_bytes;
+			out0_asset_stream->entries[i].offset = out_offset;
 			size_t path_len = strlen(path) + 1;
 			out0_asset_stream->entries[i].reference_asset_path = malloc(path_len);
 			memcpy(out0_asset_stream->entries[i].reference_asset_path, path, path_len);
@@ -139,6 +143,7 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 		Buf_Free(&buf, &alloc_imp);
 	}
 
+	out0_asset_stream->asset_data_processed_bytes += processed_bytes_in_this_asset;
 	ISzAlloc_Free(&alloc_imp, out_buffer);
 	SzFree(NULL, file_name);
 	SzArEx_Free(&db, &alloc_imp);
@@ -159,6 +164,12 @@ int G00_AssetGenerateLoadOrder(const char* assets_dir_path) {
 	size_t load_order_filename_len = strlen(load_order_filename);
 	char* load_order_path = malloc(path_len + 1 + load_order_filename_len + 1);
 	sprintf(load_order_path, "%s/%s", assets_dir_path, load_order_filename);
+
+	struct stat s;
+	stat(load_order_path, &s);
+	if (s.st_size > 0) {
+		return 2;
+	}
 
 	FILE* fp = fopen(load_order_path, "wt");
 	free(load_order_path);
@@ -184,7 +195,7 @@ int G00_AssetGenerateLoadOrder(const char* assets_dir_path) {
 			continue;
 		}
 
-		fprintf(fp, "load %s", entry->d_name);
+		fprintf(fp, "load %s\n", entry->d_name);
 	}
 
 	fclose(fp);

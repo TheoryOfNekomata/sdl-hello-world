@@ -21,6 +21,7 @@ struct G00_MemoryState {
 	struct G00_MemoryConfig config;
 	struct G00_MemoryOffsetEntry* entries;
 	char* data;
+	size_t asset_data_processed_bytes;
 };
 
 int G00_MemoryInit(struct G00_MemoryState*, struct G00_MemoryConfig);
