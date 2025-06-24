@@ -11,6 +11,7 @@ enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video, struct G00_Video
 
 	video->config.screen_width = config.screen_width;
 	video->config.screen_height = config.screen_height;
+	video->config.aspect_ratio = (float) config.screen_width / (float) config.screen_height;
 	video->config.frames_per_second = config.frames_per_second;
 	video->config.millis_per_tick = config.millis_per_tick;
 
@@ -68,7 +69,38 @@ void G00_VideoUpdate(struct G00_Video* video, unsigned long app_ticks) {
 	video->ticks = app_ticks;
 }
 
-int G00_VideoLoadImageObject(struct G00_Video* video, const char* path, unsigned int* out0_index) {
+int G00_VideoLoadImageFromMemory(struct G00_Video* video, size_t len, void* mem, unsigned int* out0_index) {
+	for (unsigned int i = 0; i < G00_VIDEO_MAX_LOADED_TEXTURES; i += 1) {
+		if (video->loaded_textures[i] != NULL) {
+			continue;
+		}
+
+		SDL_Surface* image = IMG_Load_IO(SDL_IOFromMem(mem, len), true);
+		if (image == NULL) {
+			return -1;
+		}
+
+		video->loaded_textures[i] = SDL_CreateTextureFromSurface(video->renderer, image);
+		if (video->loaded_textures[i] == NULL) {
+			return -2;
+		}
+		SDL_DestroySurface(image);
+
+		for (unsigned int j = 0; j < G00_VIDEO_MAX_LOADED_SPRITES; j += 1) {
+			if (video->loaded_sprites[j].type != G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN) {
+				continue;
+			}
+
+			video->loaded_sprites[j].type = G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE;
+			*out0_index = video->loaded_sprites[j].index = i;
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+int G00_VideoLoadImageFromFile(struct G00_Video* video, const char* path, unsigned int* out0_index) {
 	for (unsigned int i = 0; i < G00_VIDEO_MAX_LOADED_TEXTURES; i += 1) {
 		if (video->loaded_textures[i] != NULL) {
 			continue;
@@ -99,7 +131,7 @@ int G00_VideoLoadImageObject(struct G00_Video* video, const char* path, unsigned
 	return 1;
 }
 
-int G00_VideoLoadTextObject(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, unsigned int* out0_texture_index) {
+int G00_VideoLoadText(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, unsigned int* out0_texture_index) {
 	for (unsigned int i = 0; i < G00_VIDEO_MAX_LOADED_TEXTURES; i += 1) {
 		if (video->loaded_textures[i] != NULL) {
 			continue;
@@ -130,7 +162,25 @@ int G00_VideoLoadTextObject(struct G00_Video* video, unsigned int font_index, co
 	return 1;
 }
 
-int G00_VideoLoadFont(struct G00_Video* video, const char* path, float size, unsigned int* out0_index) {
+int G00_VideoLoadFontFromMemory(struct G00_Video* video, size_t len, void* mem, float size, unsigned int* out0_index) {
+	for (unsigned int i = 0; i < G00_VIDEO_MAX_LOADED_FONTS; i += 1) {
+		if (video->loaded_fonts[i] != NULL) {
+			continue;
+		}
+
+		video->loaded_fonts[i] = TTF_OpenFontIO(SDL_IOFromMem(mem, len), true, size);
+		if (video->loaded_fonts[i] == NULL) {
+			return -1;
+		}
+
+		*out0_index = i;
+		return 0;
+	}
+
+	return 1;
+}
+
+int G00_VideoLoadFontFromFile(struct G00_Video* video, const char* path, float size, unsigned int* out0_index) {
 	for (unsigned int i = 0; i < G00_VIDEO_MAX_LOADED_FONTS; i += 1) {
 		if (video->loaded_fonts[i] != NULL) {
 			continue;

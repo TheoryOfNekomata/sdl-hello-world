@@ -14,6 +14,7 @@ struct G00_App;
 struct G00_VideoConfig {
 	unsigned int screen_width;
 	unsigned int screen_height;
+	float aspect_ratio;
 	float frames_per_second;
 	float millis_per_tick;
 };
@@ -54,12 +55,16 @@ enum G00_VideoInitResult G00_VideoInit(struct G00_Video*, struct G00_VideoConfig
 
 void G00_VideoUpdate(struct G00_Video*, unsigned long);
 
-int G00_VideoLoadImageObject(struct G00_Video*, const char*, unsigned int* out0);
+int G00_VideoLoadImageFromFile(struct G00_Video*, const char*, unsigned int* out0);
 
-int G00_VideoLoadTextObject(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
+int G00_VideoLoadImageFromMemory(struct G00_Video*, size_t, void*, unsigned int* out0);
+
+int G00_VideoLoadText(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
 
 void G00_VideoUnloadObject(struct G00_Video*, unsigned int);
 
-int G00_VideoLoadFont(struct G00_Video*, const char*, float, unsigned int* out0);
+int G00_VideoLoadFontFromFile(struct G00_Video*, const char*, float, unsigned int* out0);
+
+int G00_VideoLoadFontFromMemory(struct G00_Video* video, size_t len, void* mem, float size, unsigned int* out0_index);
 
 #endif
