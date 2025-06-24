@@ -47,7 +47,7 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 	CFileInStream archive_stream;
 	WRes res = InFile_Open(&archive_stream.file, path);
 	if (res != 0) {
-		fprintf(stderr, "Cannot open default asset.\n");
+		fprintf(stderr, "Cannot open asset.\n");
 		return -2;
 	}
 
@@ -130,6 +130,9 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 			memcpy(out0_asset_stream->entries[i].name, buf.data, buf.size);
 			out0_asset_stream->entries[i].len = out_size_processed;
 			out0_asset_stream->entries[i].offset = offset;
+			size_t path_len = strlen(path) + 1;
+			out0_asset_stream->entries[i].reference_asset_path = malloc(path_len);
+			memcpy(out0_asset_stream->entries[i].reference_asset_path, path, path_len);
 			break;
 		}
 
@@ -143,12 +146,97 @@ int G00_AssetLoad(const char* path, struct G00_MemoryState* out0_asset_stream) {
 	return 0;
 }
 
-int G00_AssetGenerateLoadOrder() {
-	// TODO generate assets/load.cfg file
+const char* load_order_filename = "load.cfg";
+
+int G00_AssetGenerateLoadOrder(const char* assets_dir_path) {
+	DIR* dir = opendir(assets_dir_path);
+	if (dir == NULL) {
+		fprintf(stdout, "No assets found.\n");
+		return 1;
+	}
+
+	size_t path_len = strlen(assets_dir_path);
+	size_t load_order_filename_len = strlen(load_order_filename);
+	char* load_order_path = malloc(path_len + 1 + load_order_filename_len + 1);
+	sprintf(load_order_path, "%s/%s", assets_dir_path, load_order_filename);
+
+	FILE* fp = fopen(load_order_path, "wt");
+	free(load_order_path);
+	if (fp == NULL) {
+		return -1;
+	}
+
+	const char* asset_filename_suffix = ".asset.7z";
+	size_t asset_filename_suffix_len = strlen(asset_filename_suffix);
+	dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		if (!strcmp(entry->d_name, ".")) {
+			continue;
+		}
+		if (!strcmp(entry->d_name, "..")) {
+			continue;
+		}
+		bool is_filtered = true;
+		for (unsigned int i = 0; i < asset_filename_suffix_len && is_filtered; i += 1) {
+			is_filtered = asset_filename_suffix[i] == entry->d_name[entry->d_namlen - asset_filename_suffix_len + i];
+		}
+		if (!is_filtered) {
+			continue;
+		}
+
+		fprintf(fp, "load %s", entry->d_name);
+	}
+
+	fclose(fp);
 	return 0;
 }
 
-int G00_AssetLoadFromOrder() {
-	// TODO
+int G00_AssetLoadFromOrder(const char* assets_dir_path, struct G00_MemoryState* out0_memory) {
+	if (assets_dir_path == NULL) {
+		return -1;
+	}
+
+	if (out0_memory == NULL) {
+		return -1;
+	}
+
+	size_t path_len = strlen(assets_dir_path);
+	size_t load_order_filename_len = strlen(load_order_filename);
+	char* load_order_path = malloc(path_len + 1 + load_order_filename_len + 1);
+	sprintf(load_order_path, "%s/%s", assets_dir_path, load_order_filename);
+
+	FILE* fp = fopen(load_order_path, "rt");
+	free(load_order_path);
+	if (fp == NULL) {
+		fprintf(stderr, "Cannot open asset loader. Doing nothing.\n");
+		return 1;
+	}
+
+	char command[255];
+	char arg[255];
+
+	while (!feof(fp)) {
+		fscanf(fp, "%s %s\n", &command, &arg);
+
+		if (!strcmp(command, "load")) {
+			char* asset_path = malloc(path_len + 1 + strlen(arg) + 1);
+
+			sprintf(asset_path, "%s/%s", assets_dir_path, arg);
+			fprintf(stdout, "Loading %s...\n", asset_path);
+
+			int asset_load_response = G00_AssetLoad(asset_path, out0_memory);
+			if (asset_load_response < 0) { // TODO fix default asset filenames
+				fprintf(stderr, "Unrecoverable error.\n");
+				return -2;
+			}
+			if (asset_load_response > 0) {
+				fprintf(stdout, "Loaded with warnings.\n");
+				continue;
+			}
+			fprintf(stdout, "Loaded successfully.\n");
+		}
+	}
+
+	fclose(fp);
 	return 0;
 }

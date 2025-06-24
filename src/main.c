@@ -67,8 +67,8 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	// TODO load all assets in order
-	if (G00_AssetLoad("assets/abegail.asset.7z", &app.memory) != 0) { // TODO fix default asset filenames
+	G00_AssetGenerateLoadOrder("assets");
+	if (G00_AssetLoadFromOrder("assets", &app.memory) < 0) {
 		return -1;
 	}
 

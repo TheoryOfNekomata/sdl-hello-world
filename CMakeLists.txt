@@ -7,7 +7,7 @@ file(GLOB sources src/*.h src/*.c)
 
 file(GLOB sources_7z thirdparty/lzma2409/include/lzma/*.h thirdparty/lzma2409/include/lzma/*.c)
 
-add_executable(${PROJECT_NAME} thirdparty/sqlite/include/sqlite/sqlite3.c ${sources_7z} ${sources})
+add_executable(${PROJECT_NAME} thirdparty/sqlite/include/sqlite/sqlite3.c ${sources_7z} thirdparty/dirent/include/dirent/dirent.h ${sources})
 
 target_include_directories(
     ${PROJECT_NAME} PRIVATE
@@ -16,6 +16,7 @@ target_include_directories(
         thirdparty/SDL3_ttf/include
         thirdparty/sqlite/include
         thirdparty/lzma2409/include
+        thirdparty/dirent/include
 )
 
 target_link_directories(

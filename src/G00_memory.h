@@ -9,6 +9,7 @@ struct G00_MemoryOffsetEntry {
 	unsigned char* name;
 	unsigned long long offset;
 	unsigned long long len;
+	unsigned char* reference_asset_path;
 };
 
 struct G00_MemoryState {
