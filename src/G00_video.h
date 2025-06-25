@@ -1,6 +1,7 @@
 #ifndef G00_VIDEO_H
 #define G00_VIDEO_H
 
+#include <stdio.h>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -25,7 +26,7 @@ enum G00_VideoLoadedObjectType : unsigned char {
 
 struct G00_VideoSprite {
 	enum G00_VideoLoadedObjectType type;
-	unsigned int index;
+	unsigned int texture_index;
 	SDL_FRect rect;
 };
 
@@ -54,16 +55,20 @@ enum G00_VideoInitResult G00_VideoInit(struct G00_Video*, struct G00_VideoConfig
 
 void G00_VideoUpdate(struct G00_Video*, unsigned long);
 
-int G00_VideoLoadImageFromFile(struct G00_Video*, const char*, unsigned int* out0);
+// int G00_VideoLoadImageFromFile(struct G00_Video*, const char*, unsigned int* out0);
 
-int G00_VideoLoadImageFromMemory(struct G00_Video*, size_t, void*, unsigned int* out0);
+int G00_VideoLoadImageSprite(struct G00_Video*, size_t, void*, unsigned int* out0, SDL_Surface** out1);
 
-int G00_VideoLoadText(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
+int G00_VideoGenerateSurfaceSprite(struct G00_Video*, SDL_Surface*, SDL_Color, unsigned int* out0);
+
+int G00_VideoGenerateTextSprite(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
 
 void G00_VideoUnloadObject(struct G00_Video*, unsigned int);
 
-int G00_VideoLoadFontFromFile(struct G00_Video*, const char*, float, unsigned int* out0);
+int G00_VideoSwapSpriteTextureOrder(struct G00_Video*, unsigned int, unsigned int);
 
-int G00_VideoLoadFontFromMemory(struct G00_Video* video, size_t len, void* mem, float size, unsigned int* out0_index);
+// int G00_VideoLoadFontFromFile(struct G00_Video*, const char*, float, unsigned int* out0);
+
+int G00_VideoLoadFont(struct G00_Video*, size_t, void*, float, unsigned int* out0);
 
 #endif

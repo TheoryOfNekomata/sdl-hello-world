@@ -94,56 +94,6 @@ int main(int argc, char* argv[]) {
 	const float half_screen_x = app.config.video.screen_width / 2.f;
 	const float half_screen_y = app.config.video.screen_height / 2.f;
 
-	unsigned int bg_image_asset_index;
-	if (G00_MemoryRetrieveIndex(&app.memory, "menu-bg-parallax.png", &bg_image_asset_index) < 0) {
-		fprintf(stderr, "Unable to retrieve image!\n");
-		return -1;
-	}
-
-	unsigned int bg_image_sprite_index;
-	int bg_sprite_load_result = G00_VideoLoadImageFromMemory(&app.video, app.memory.entries[bg_image_asset_index].len, app.memory.data + app.memory.entries[bg_image_asset_index].offset, &bg_image_sprite_index);
-	if (bg_sprite_load_result < 0) {
-		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
-		return -1;
-	} if (bg_sprite_load_result > 0) {
-		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
-	}
-
-	float base_bg_x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].index]->w / 2.f);
-	float base_bg_y = half_screen_y - (app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].index]->h / 2.f);
-
-	app.video.loaded_sprites[bg_image_sprite_index].rect = (SDL_FRect) {
-		.x = base_bg_x,
-		.y = base_bg_y,
-		.w = app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].index]->w,
-		.h = app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].index]->h,
-	};
-
-	unsigned int fg_image_asset_index;
-	if (G00_MemoryRetrieveIndex(&app.memory, "menu-fg-parallax.png", &fg_image_asset_index) < 0) {
-		fprintf(stderr, "Unable to retrieve image!\n");
-		return -1;
-	}
-
-	unsigned int fg_image_sprite_index;
-	int fg_sprite_load_result = G00_VideoLoadImageFromMemory(&app.video, app.memory.entries[fg_image_asset_index].len, app.memory.data + app.memory.entries[fg_image_asset_index].offset, &fg_image_sprite_index);
-	if (fg_sprite_load_result < 0) {
-		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
-		return -1;
-	} if (fg_sprite_load_result > 0) {
-		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
-	}
-
-	float base_fg_x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].index]->w / 2.f);
-	float base_fg_y = half_screen_y - (app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].index]->h / 2.f);
-
-	app.video.loaded_sprites[fg_image_sprite_index].rect = (SDL_FRect) {
-		.x = base_fg_x,
-		.y = base_fg_y,
-		.w = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].index]->w,
-		.h = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].index]->h,
-	};
-
 	unsigned int font_asset_index;
 	if (G00_MemoryRetrieveIndex(&app.memory, "font-ui.ttf", &font_asset_index) < 0) {
 		fprintf(stderr, "Unable to retrieve font!\n");
@@ -151,7 +101,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	unsigned int font_index;
-	int font_load_result = G00_VideoLoadFontFromMemory(&app.video, app.memory.entries[font_asset_index].len, app.memory.data + app.memory.entries[font_asset_index].offset, 16.f, &font_index);
+	int font_load_result = G00_VideoLoadFont(&app.video, app.memory.entries[font_asset_index].len, app.memory.data + app.memory.entries[font_asset_index].offset, 16.f, &font_index);
 	if (font_load_result < 0) {
 		fprintf(stderr, "Unable to load font! SDL_Error: %s\n", SDL_GetError());
 		return -1;
@@ -160,7 +110,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	unsigned int text_sprite_index;
-	int text_sprite_load_result = G00_VideoLoadText(&app.video, font_index, "Hello, world!", 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
+	int text_sprite_load_result = G00_VideoGenerateTextSprite(&app.video, font_index, "Hello, world!", 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
 	if (text_sprite_load_result < 0) {
 		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 		return -1;
@@ -169,10 +119,114 @@ int main(int argc, char* argv[]) {
 	}
 
 	app.video.loaded_sprites[text_sprite_index].rect = (SDL_FRect) {
-		.x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].index]->w / 2.f),
-		.y = app.config.video.screen_height - app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].index]->h,
-		.w = app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].index]->w,
-		.h = app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].index]->h,
+		.x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->w / 2.f),
+		.y = app.config.video.screen_height - app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->h,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->h,
+	};
+
+	unsigned int fg_image_asset_index;
+	if (G00_MemoryRetrieveIndex(&app.memory, "menu-fg-parallax.png", &fg_image_asset_index) < 0) {
+		fprintf(stderr, "Unable to retrieve image!\n");
+		return -1;
+	}
+
+	SDL_Surface* fg_surface;
+	unsigned int fg_image_sprite_index;
+	int fg_sprite_load_result = G00_VideoLoadImageSprite(
+		&app.video,
+		app.memory.entries[fg_image_asset_index].len,
+		app.memory.data + app.memory.entries[fg_image_asset_index].offset,
+		&fg_image_sprite_index,
+		&fg_surface
+	);
+	if (fg_sprite_load_result < 0) {
+		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+		return -1;
+	} if (fg_sprite_load_result > 0) {
+		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
+	}
+
+	float base_fg_x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].texture_index]->w / 2.f);
+	float base_fg_y = half_screen_y - (app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].texture_index]->h / 2.f);
+
+	unsigned int fg_image_sprite_index_shadow0;
+	G00_VideoGenerateSurfaceSprite(&app.video, fg_surface, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0x00, .a = 0xFF }, &fg_image_sprite_index_shadow0);
+
+	unsigned int fg_image_sprite_index_shadow1;
+	G00_VideoGenerateSurfaceSprite(&app.video, fg_surface, (SDL_Color) { .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 0xFF }, &fg_image_sprite_index_shadow1);
+
+	unsigned int fg_image_sprite_index_shadow2;
+	G00_VideoGenerateSurfaceSprite(&app.video, fg_surface, (SDL_Color) { .r = 0x00, .g = 0xFF, .b = 0xFF, .a = 0xFF }, &fg_image_sprite_index_shadow2);
+
+	unsigned int fg_image_sprite_index_shadow3;
+	G00_VideoGenerateSurfaceSprite(&app.video, fg_surface, (SDL_Color) { .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF }, &fg_image_sprite_index_shadow3);
+	SDL_DestroySurface(fg_surface);
+
+	app.video.loaded_sprites[fg_image_sprite_index].rect = (SDL_FRect) {
+		.x = base_fg_x,
+		.y = base_fg_y,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index].texture_index]->h,
+	};
+
+	app.video.loaded_sprites[fg_image_sprite_index_shadow0].rect = (SDL_FRect) {
+		.x = base_fg_x,
+		.y = base_fg_y,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow0].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow0].texture_index]->h,
+	};
+
+	app.video.loaded_sprites[fg_image_sprite_index_shadow1].rect = (SDL_FRect) {
+		.x = base_fg_x,
+		.y = base_fg_y,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow1].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow1].texture_index]->h,
+	};
+
+	app.video.loaded_sprites[fg_image_sprite_index_shadow2].rect = (SDL_FRect) {
+		.x = base_fg_x,
+		.y = base_fg_y,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow2].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow2].texture_index]->h,
+	};
+
+	app.video.loaded_sprites[fg_image_sprite_index_shadow3].rect = (SDL_FRect) {
+		.x = base_fg_x,
+		.y = base_fg_y,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow3].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[fg_image_sprite_index_shadow3].texture_index]->h,
+	};
+
+	unsigned int bg_image_asset_index;
+	if (G00_MemoryRetrieveIndex(&app.memory, "menu-bg-parallax.png", &bg_image_asset_index) < 0) {
+		fprintf(stderr, "Unable to retrieve image!\n");
+		return -1;
+	}
+
+	unsigned int bg_image_sprite_index;
+	int bg_sprite_load_result = G00_VideoLoadImageSprite(
+		&app.video,
+		app.memory.entries[bg_image_asset_index].len,
+		app.memory.data + app.memory.entries[bg_image_asset_index].offset,
+		&bg_image_sprite_index,
+		NULL
+	);
+	if (bg_sprite_load_result < 0) {
+		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+		return -1;
+	} if (bg_sprite_load_result > 0) {
+		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
+	}
+
+	float base_bg_x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].texture_index]->w / 2.f);
+	float base_bg_y = half_screen_y - (app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].texture_index]->h / 2.f);
+
+	app.video.loaded_sprites[bg_image_sprite_index].rect = (SDL_FRect) {
+		.x = base_bg_x,
+		.y = base_bg_y,
+		.w = app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].texture_index]->w,
+		.h = app.video.loaded_textures[app.video.loaded_sprites[bg_image_sprite_index].texture_index]->h,
 	};
 
 	bool quit = false;
@@ -191,6 +245,18 @@ int main(int argc, char* argv[]) {
 
 				app.video.loaded_sprites[fg_image_sprite_index].rect.x = base_fg_x + ((e.motion.x - half_screen_x) / half_screen_x * parallax_offset);
 				app.video.loaded_sprites[fg_image_sprite_index].rect.y = base_fg_y + ((e.motion.y - half_screen_y) / half_screen_y * parallax_offset);
+
+				app.video.loaded_sprites[fg_image_sprite_index_shadow0].rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
+				app.video.loaded_sprites[fg_image_sprite_index_shadow0].rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
+
+				app.video.loaded_sprites[fg_image_sprite_index_shadow1].rect.x = base_fg_x - 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 64.f));
+				app.video.loaded_sprites[fg_image_sprite_index_shadow1].rect.y = base_fg_y - 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 32.f));
+
+				app.video.loaded_sprites[fg_image_sprite_index_shadow2].rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
+				app.video.loaded_sprites[fg_image_sprite_index_shadow2].rect.y = base_fg_y - 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 32.f));
+
+				app.video.loaded_sprites[fg_image_sprite_index_shadow3].rect.x = base_fg_x - 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 64.f));
+				app.video.loaded_sprites[fg_image_sprite_index_shadow3].rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
 			}
 		}
 
