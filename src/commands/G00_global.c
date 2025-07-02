@@ -1,6 +1,6 @@
 #include "../G00_command.h"
 
-int G00_ConfigCommandGetHelpArgType(enum G00_CommandArgumentType type, char(* out0_str)[8]) {
+int G00_XCommandHelpGetArgType(enum G00_CommandArgumentType type, char(* out0_str)[8]) {
 	switch (type) {
 		case G00_COMMAND_ARGUMENT_TYPE_U8:
 			memcpy(out0_str, "u8", 8);
@@ -45,7 +45,7 @@ int G00_XCommandHelp(char args[255], struct G00_CommandArgumentDefinition arg_de
 		if (!strcmpi(G00_CONFIG_COMMAND_MAPPING[i].name, command_name)) {
 			fprintf(stdout, "%s", G00_CONFIG_COMMAND_MAPPING[i].name);
 			for (unsigned int j = 0; j < G00_CONFIG_COMMAND_MAPPING[i].args.maximum; j += 1) {
-				G00_ConfigCommandGetHelpArgType(G00_CONFIG_COMMAND_MAPPING[i].args.defs[j].type, &arg_type_str);
+				G00_XCommandHelpGetArgType(G00_CONFIG_COMMAND_MAPPING[i].args.defs[j].type, &arg_type_str);
 				if (j < G00_CONFIG_COMMAND_MAPPING[i].args.minimum) {
 					fprintf(stdout, " <%s:%s>", G00_CONFIG_COMMAND_MAPPING[i].args.defs[j].name, arg_type_str);
 				} else {

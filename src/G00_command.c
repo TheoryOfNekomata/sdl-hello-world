@@ -1,3 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <errno.h>
+
 #include "G00_command.h"
 
 int G00_CommandParseArgs(char input[255], struct G00_CommandArgumentDefinition arg_defs, unsigned int* out0_parsed_args, ...) {

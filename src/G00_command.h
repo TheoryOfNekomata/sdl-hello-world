@@ -1,13 +1,6 @@
 #ifndef G00_COMMAND_H
 #define G00_COMMAND_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <errno.h>
-
 #include "G00_config.h"
 #include "G00_commands.h"
 
