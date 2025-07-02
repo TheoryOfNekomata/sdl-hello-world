@@ -3,7 +3,7 @@ project(sdl_hello_world C)
 
 set(CMAKE_C_STANDARD 23)
 
-file(GLOB sources src/*.h src/*.c)
+file(GLOB sources src/*.h src/*.c src/commands/*.c)
 
 file(GLOB sources_7z thirdparty/lzma2409/include/lzma/*.h thirdparty/lzma2409/include/lzma/*.c)
 

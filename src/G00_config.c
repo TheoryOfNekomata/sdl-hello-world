@@ -1,11 +1,17 @@
 #include "G00_config.h"
-#include "G00_commands.h"
+#include "G00_command.h"
 
 int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[255], char args[255], struct G00_Config* out0_config) {
 	unsigned int i = 0;
 	do {
 		if (!strcmpi(command, G00_CONFIG_COMMAND_MAPPING[i].name)) {
-			int command_result = G00_CONFIG_COMMAND_MAPPING[i].fn(args, out0_config);
+			if (!G00_CONFIG_COMMAND_MAPPING[i].execute_fn) {
+				fprintf(stdout, "%s:%u - WRN003: Command \"%s\" not yet implemented, performing noop\n", path, line, command);
+				return 1;
+			}
+
+			G00_ConfigCommand* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
+			int command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args, out0_config);
 			if (command_result < 0) {
 				fprintf(stderr, "%s:%u - ERR002: Command \"%s\" error (return code %d)\n", path, line, command, command_result);
 			} else if (command_result > 0) {

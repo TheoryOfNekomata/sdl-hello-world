@@ -12,11 +12,32 @@ struct G00_Config {
   struct G00_VideoConfig video;
 };
 
-typedef int G00_ConfigCommandFunction(char*, struct G00_Config* out0);
+enum G00_ConfigArgumentType {
+  G00_CONFIG_ARGUMENT_TYPE_U8,
+  G00_CONFIG_ARGUMENT_TYPE_U16,
+  G00_CONFIG_ARGUMENT_TYPE_U32,
+  G00_CONFIG_ARGUMENT_TYPE_U64,
+  G00_CONFIG_ARGUMENT_TYPE_F32,
+  G00_CONFIG_ARGUMENT_TYPE_STRING,
+};
+
+struct G00_ConfigArgument {
+  const char* name;
+  enum G00_ConfigArgumentType type;
+};
+
+struct G00_ConfigCommandArguments {
+  unsigned char minimum;
+  unsigned char maximum;
+  struct G00_ConfigArgument* defs;
+};
+
+typedef int G00_ConfigCommand(char*, struct G00_ConfigCommandArguments, struct G00_Config* out0);
 
 struct G00_ConfigCommandMappingEntry {
   const char* name;
-  G00_ConfigCommandFunction* fn;
+  void* execute_fn;
+  struct G00_ConfigCommandArguments args;
 };
 
 static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[];

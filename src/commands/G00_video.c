@@ -1,11 +1,16 @@
-#include "G00_commands.h"
+#include "../G00_command.h"
 
-int G00_AppApplyConfig(struct G00_App* app);
+int G00_CommandVideoScreenSize(char args[255], struct G00_ConfigCommandArguments arg_defs, struct G00_Config* out0_config) {
+	unsigned int args_count = 0;
+	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &out0_config->video.screen_width, &out0_config->video.screen_height) < 0) {
+		return -1;
+	}
 
-int G00_ConfigCommandSetScreenSize(char args[255], struct G00_Config* out0_config) {
-	//char width_str[8];
-	//char height_str[8];
-	sscanf(args, "%u %u", &out0_config->video.screen_width, &out0_config->video.screen_height);
+	if (args_count == 0) {
+		fprintf(stdout, "Screen size is %u x %u pixels\n", out0_config->video.screen_width, out0_config->video.screen_height);
+		return 0;
+	}
+
 	if (!(0 < out0_config->video.screen_width && out0_config->video.screen_width < 99999u)) {
 		out0_config->video.screen_width = 1024u;
 		out0_config->video.screen_height = 768u;
@@ -30,9 +35,16 @@ int G00_ConfigCommandSetScreenSize(char args[255], struct G00_Config* out0_confi
 	return 0;
 }
 
-int G00_ConfigCommandSetIdealFps(char args[255], struct G00_Config* out0_config) {
-	//char fps_str[8];
-	sscanf(args, "%f", &out0_config->video.frames_per_second);
+int G00_CommandVideoIdealFps(char args[255], struct G00_ConfigCommandArguments arg_defs, struct G00_Config* out0_config) {
+	unsigned int args_count = 0;
+	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &out0_config->video.frames_per_second) < 0) {
+		return -1;
+	}
+
+	if (args_count == 0) {
+		fprintf(stdout, "Ideal frames-per-second value is %.3f\n", out0_config->video.frames_per_second);
+		return 0;
+	}
 
 	if (out0_config->video.frames_per_second < 10.f) {
 		out0_config->video.frames_per_second = 10.f;
@@ -56,36 +68,16 @@ int G00_ConfigCommandSetIdealFps(char args[255], struct G00_Config* out0_config)
 	return 0;
 }
 
-int G00_ConfigCommandSetMemoryPoolSize(char args[255], struct G00_Config* out0_config) {
-	sscanf(args, "%llu", &out0_config->memory.pool_size_bytes);
-
-	if (!(10485760u <= out0_config->memory.pool_size_bytes && out0_config->memory.pool_size_bytes <= 2147483648u)) {
-		out0_config->memory.pool_size_bytes = 10485760u;
-
-		G00_AppApplyConfig(out0_config->app);
-		return 1;
+int G00_CommandVideoMaxLoadedTextures(char args[255], struct G00_ConfigCommandArguments arg_defs, struct G00_Config* out0_config) {
+	unsigned int args_count = 0;
+	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &out0_config->video.max_loaded_textures) < 0) {
+		return -1;
 	}
 
-	G00_AppApplyConfig(out0_config->app);
-	return 0;
-}
-
-int G00_ConfigCommandSetMemoryMaxEntries(char args[255], struct G00_Config* out0_config) {
-	sscanf(args, "%u", &out0_config->memory.pool_max_entries);
-
-	if (!(256u <= out0_config->memory.pool_max_entries && out0_config->memory.pool_max_entries <= 131072u)) {
-		out0_config->memory.pool_max_entries = 256u;
-
-		G00_AppApplyConfig(out0_config->app);
-		return 1;
+	if (args_count == 0) {
+		fprintf(stdout, "Video maximum loaded textures count is %u\n", out0_config->video.max_loaded_textures);
+		return 0;
 	}
-
-	G00_AppApplyConfig(out0_config->app);
-	return 0;
-}
-
-int G00_ConfigCommandSetVideoMaxLoadedTextures(char args[255], struct G00_Config* out0_config) {
-	sscanf(args, "%u", &out0_config->video.max_loaded_textures);
 
 	if (!(16u <= out0_config->video.max_loaded_textures && out0_config->video.max_loaded_textures <= 255u)) {
 		out0_config->video.max_loaded_textures = 16u;
@@ -98,8 +90,16 @@ int G00_ConfigCommandSetVideoMaxLoadedTextures(char args[255], struct G00_Config
 	return 0;
 }
 
-int G00_ConfigCommandSetVideoMaxLoadedSprites(char args[255], struct G00_Config* out0_config) {
-	sscanf(args, "%u", &out0_config->video.max_loaded_sprites);
+int G00_CommandVideoMaxLoadedSprites(char args[255], struct G00_ConfigCommandArguments arg_defs, struct G00_Config* out0_config) {
+	unsigned int args_count = 0;
+	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &out0_config->video.max_loaded_sprites) < 0) {
+		return -1;
+	}
+
+	if (args_count == 0) {
+		fprintf(stdout, "Video maximum loaded sprites count is %u\n", out0_config->video.max_loaded_sprites);
+		return 0;
+	}
 
 	if (!(16u <= out0_config->video.max_loaded_sprites && out0_config->video.max_loaded_sprites <= 255u)) {
 		out0_config->video.max_loaded_sprites = 16u;
@@ -112,8 +112,16 @@ int G00_ConfigCommandSetVideoMaxLoadedSprites(char args[255], struct G00_Config*
 	return 0;
 }
 
-int G00_ConfigCommandSetVideoMaxLoadedFonts(char args[255], struct G00_Config* out0_config) {
-	sscanf(args, "%u", &out0_config->video.max_loaded_fonts);
+int G00_CommandVideoMaxLoadedFonts(char args[255], struct G00_ConfigCommandArguments arg_defs, struct G00_Config* out0_config) {
+	unsigned int args_count = 0;
+	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &out0_config->video.max_loaded_fonts) < 0) {
+		return -1;
+	}
+
+	if (args_count == 0) {
+		fprintf(stdout, "Video maximum loaded fonts is %u\n", out0_config->video.max_loaded_fonts);
+		return 0;
+	}
 
 	if (!(8u <= out0_config->video.max_loaded_fonts && out0_config->video.max_loaded_fonts <= 255u)) {
 		out0_config->video.max_loaded_fonts = 8u;
