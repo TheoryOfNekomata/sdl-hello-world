@@ -9,27 +9,14 @@
 #include <errno.h>
 
 #include "G00_config.h"
+#include "G00_commands.h"
 
-G00_Command G00_CommandHelp;
-
-G00_CommandMemory G00_CommandMemoryPoolSizeBytes;
-G00_CommandMemory G00_CommandMemoryPoolMaxEntries;
-G00_CommandMemory G00_CommandMemoryAssetLoad;
-
-G00_CommandVideo G00_CommandVideoScreenSize;
-G00_CommandVideo G00_CommandVideoIdealFps;
-G00_CommandVideo G00_CommandVideoMaxLoadedTextures;
-G00_CommandVideo G00_CommandVideoMaxLoadedFonts;
-G00_CommandVideo G00_CommandVideoMaxLoadedSprites;
-
-int G00_ConfigParseArgs(char[255], struct G00_CommandArgumentDefinition, unsigned int* out0, ...);
-
-int G00_AppApplyConfig(struct G00_App* app);
+int G00_CommandParseArgs(char[255], struct G00_CommandArgumentDefinition, unsigned int* out0, ...);
 
 static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	{
 		.name = "help",
-		.execute_fn = G00_CommandHelp,
+		.execute_fn = G00_XCommandHelp,
 		.args = {
 			.minimum = 0,
 			.maximum = 1,
@@ -43,7 +30,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "video_screen_size",
-		.execute_fn = G00_CommandVideoScreenSize,
+		.execute_fn = G00_XCommandVideoScreenSize,
 		.args = {
 			.minimum = 2,
 			.maximum = 2,
@@ -61,7 +48,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "video_ideal_fps",
-		.execute_fn = G00_CommandVideoIdealFps,
+		.execute_fn = G00_XCommandVideoIdealFps,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -75,7 +62,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "memory_pool_size_bytes",
-		.execute_fn = G00_CommandMemoryPoolSizeBytes,
+		.execute_fn = G00_XCommandMemoryPoolSizeBytes,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -89,7 +76,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "memory_pool_max_entries",
-		.execute_fn = G00_CommandMemoryPoolMaxEntries,
+		.execute_fn = G00_XCommandMemoryPoolMaxEntries,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -103,7 +90,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "video_max_loaded_textures",
-		.execute_fn = G00_CommandVideoMaxLoadedTextures,
+		.execute_fn = G00_XCommandVideoMaxLoadedTextures,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -117,7 +104,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "video_max_loaded_fonts",
-		.execute_fn = G00_CommandVideoMaxLoadedFonts,
+		.execute_fn = G00_XCommandVideoMaxLoadedFonts,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -131,7 +118,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "video_max_loaded_sprites",
-		.execute_fn = G00_CommandVideoMaxLoadedSprites,
+		.execute_fn = G00_XCommandVideoMaxLoadedSprites,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -145,7 +132,7 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 	{
 		.name = "memory_asset_load",
-		.execute_fn = G00_CommandMemoryAssetLoad,
+		.execute_fn = G00_XCommandMemoryAssetLoad,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
@@ -159,42 +146,41 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 	},
 
 	{
-		.name = "msg_key",
+		.name = "ui_msg_key",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "menu",
+		.name = "ui_menu",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "item",
+		.name = "ui_item",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "title",
+		.name = "ui_title",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "description_text",
+		.name = "ui_description_text",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "label",
+		.name = "ui_label",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "menu_push",
+		.name = "ui_menu_push",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "menu_pop",
+		.name = "ui_menu_pop",
 		.execute_fn = NULL // TODO
 	},
 {
-		.name = "menu_show_start",
+		.name = "ui_menu_show_start",
 		.execute_fn = NULL // TODO
 	},
-
 	{
 		.name = NULL,
 		.execute_fn = NULL,

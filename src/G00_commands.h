@@ -1,0 +1,16 @@
+#ifndef G00_COMMANDS_H
+#define G00_COMMANDS_H
+
+G00_Command G00_XCommandHelp;
+
+G00_CommandMemory G00_XCommandMemoryPoolSizeBytes;
+G00_CommandMemory G00_XCommandMemoryPoolMaxEntries;
+G00_CommandMemory G00_XCommandMemoryAssetLoad;
+
+G00_CommandVideo G00_XCommandVideoScreenSize;
+G00_CommandVideo G00_XCommandVideoIdealFps;
+G00_CommandVideo G00_XCommandVideoMaxLoadedTextures;
+G00_CommandVideo G00_XCommandVideoMaxLoadedFonts;
+G00_CommandVideo G00_XCommandVideoMaxLoadedSprites;
+
+#endif

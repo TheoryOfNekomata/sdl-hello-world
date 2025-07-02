@@ -1,9 +1,9 @@
 #include "../G00_video.h"
 #include "../G00_command.h"
 
-int G00_CommandVideoScreenSize(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
+int G00_XCommandVideoScreenSize(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &video_state->config.screen_width, &video_state->config.screen_height) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.screen_width, &video_state->config.screen_height) < 0) {
 		return -1;
 	}
 
@@ -33,9 +33,9 @@ int G00_CommandVideoScreenSize(char args[255], struct G00_CommandArgumentDefinit
 	return 0;
 }
 
-int G00_CommandVideoIdealFps(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
+int G00_XCommandVideoIdealFps(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &video_state->config.frames_per_second) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.frames_per_second) < 0) {
 		return -1;
 	}
 
@@ -60,9 +60,9 @@ int G00_CommandVideoIdealFps(char args[255], struct G00_CommandArgumentDefinitio
 	return 0;
 }
 
-int G00_CommandVideoMaxLoadedTextures(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
+int G00_XCommandVideoMaxLoadedTextures(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_textures) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_textures) < 0) {
 		return -1;
 	}
 
@@ -81,9 +81,9 @@ int G00_CommandVideoMaxLoadedTextures(char args[255], struct G00_CommandArgument
 	return 0;
 }
 
-int G00_CommandVideoMaxLoadedSprites(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
+int G00_XCommandVideoMaxLoadedSprites(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_sprites) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_sprites) < 0) {
 		return -1;
 	}
 
@@ -102,9 +102,9 @@ int G00_CommandVideoMaxLoadedSprites(char args[255], struct G00_CommandArgumentD
 	return 0;
 }
 
-int G00_CommandVideoMaxLoadedFonts(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
+int G00_XCommandVideoMaxLoadedFonts(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_fonts) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_fonts) < 0) {
 		return -1;
 	}
 

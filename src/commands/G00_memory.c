@@ -2,10 +2,10 @@
 #include "../G00_memory.h"
 #include "../G00_command.h"
 
-int G00_CommandMemoryAssetLoad(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
+int G00_XCommandMemoryAssetLoad(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
 	char path[255];
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, path)) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, path)) {
 		return -1;
 	}
 
@@ -26,9 +26,9 @@ int G00_CommandMemoryAssetLoad(char args[255], struct G00_CommandArgumentDefinit
 	return 0;
 }
 
-int G00_CommandMemoryPoolSizeBytes(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
+int G00_XCommandMemoryPoolSizeBytes(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &memory->config.pool_size_bytes) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &memory->config.pool_size_bytes) < 0) {
 		return -1;
 	}
 
@@ -48,9 +48,9 @@ int G00_CommandMemoryPoolSizeBytes(char args[255], struct G00_CommandArgumentDef
 	return 0;
 }
 
-int G00_CommandMemoryPoolMaxEntries(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
+int G00_XCommandMemoryPoolMaxEntries(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
 	unsigned int args_count = 0;
-	if (G00_ConfigParseArgs(args, arg_defs, &args_count, &memory->config.pool_max_entries) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &memory->config.pool_max_entries) < 0) {
 		return -1;
 	}
 
