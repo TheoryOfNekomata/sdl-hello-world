@@ -15,9 +15,7 @@ int G00_MemoryInit(struct G00_MemoryState* memory) {
 		return -2;
 	}
 	memset(memory->entries, 0, entries_len);
-
 	memory->asset_data_processed_bytes = 0;
-
 	return 0;
 }
 

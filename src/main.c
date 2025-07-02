@@ -1,7 +1,6 @@
 #include "G00_asset.h"
 #include "G00_config.h"
 
-
 enum G00_AppInitResult {
 	G00_APP_INIT_RESULT_OK = 0,
 	G00_APP_INIT_RESULT_MEMORY_ERROR = -1,
@@ -24,6 +23,8 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 	if (sqlite_result < 0) {
 		return G00_APP_INIT_RESULT_DATABASE_ERROR;
 	}
+	G00_ConfigExecuteScript("default.asset.cfg", app);
+	G00_ConfigExecuteScript("autoexec.asset.cfg", app);
 
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -41,6 +42,7 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 		return G00_APP_INIT_RESULT_VIDEO_ERROR;
 	}
 
+	G00_ConfigExecuteScript("default.menu.cfg", app);
 	return G00_APP_INIT_RESULT_OK;
 }
 
@@ -56,11 +58,6 @@ int main(int argc, char* argv[]) {
 	struct G00_App app;
 	enum G00_AppInitResult app_init_result = G00_AppInit(&app, argc, argv);
 	if (app_init_result < 0) {
-		return -1;
-	}
-
-	G00_AssetGenerateLoadOrder("assets");
-	if (G00_AssetLoadFromOrder("assets", &app.memory) < 0) {
 		return -1;
 	}
 

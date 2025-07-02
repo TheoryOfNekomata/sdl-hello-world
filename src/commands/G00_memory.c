@@ -1,4 +1,30 @@
+#include "../G00_asset.h"
+#include "../G00_memory.h"
 #include "../G00_command.h"
+
+int G00_CommandMemoryAssetLoad(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
+	char path[255];
+	unsigned int args_count = 0;
+	if (G00_ConfigParseArgs(args, arg_defs, &args_count, path)) {
+		return -1;
+	}
+
+	char real_path[255];
+	sprintf(real_path, "%s/%s", "assets", path);
+
+	fprintf(stdout, "Loading %s...\n", real_path);
+	int asset_load_response = G00_AssetLoad(real_path, memory);
+	if (asset_load_response < 0) { // TODO fix default asset filenames
+		fprintf(stderr, "Unrecoverable error.\n");
+		return -2;
+	}
+	if (asset_load_response > 0) {
+		fprintf(stdout, "Loaded with warnings.\n");
+		return 1;
+	}
+	fprintf(stdout, "Loaded successfully.\n");
+	return 0;
+}
 
 int G00_CommandMemoryPoolSizeBytes(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
 	unsigned int args_count = 0;

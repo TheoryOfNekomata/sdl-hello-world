@@ -8,6 +8,7 @@
 struct G00_MemoryConfig {
 	unsigned long long pool_size_bytes;
 	unsigned int pool_max_entries;
+	unsigned char* asset_resource_pack_dir;
 };
 
 struct G00_MemoryOffsetEntry {

@@ -14,6 +14,7 @@ G00_Command G00_CommandHelp;
 
 G00_CommandMemory G00_CommandMemoryPoolSizeBytes;
 G00_CommandMemory G00_CommandMemoryPoolMaxEntries;
+G00_CommandMemory G00_CommandMemoryAssetLoad;
 
 G00_CommandVideo G00_CommandVideoScreenSize;
 G00_CommandVideo G00_CommandVideoIdealFps;
@@ -141,6 +142,20 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 				},
 			},
 		},
+	},
+	{
+		.name = "memory_asset_load",
+		.execute_fn = G00_CommandMemoryAssetLoad,
+		.args = {
+			.minimum = 1,
+			.maximum = 1,
+			.defs = (struct G00_CommandArgument[]) {
+				{
+					.name = "path",
+					.type = G00_COMMAND_ARGUMENT_TYPE_STRING,
+				},
+			}
+		}
 	},
 
 	{
