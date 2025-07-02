@@ -1,5 +1,8 @@
 #include "G00_memory.h"
 
+#include <stdio.h>
+#include <string.h>
+
 int G00_MemoryInit(struct G00_MemoryState* memory) {
 	memory->data = malloc(memory->config.pool_size_bytes);
 	if (memory->data == NULL) {

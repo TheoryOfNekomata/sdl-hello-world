@@ -1,4 +1,3 @@
-#include "G00_asset.h"
 #include "G00_config.h"
 
 enum G00_AppInitResult {

@@ -1,8 +1,6 @@
 #ifndef G00_MEMORY_H
 #define G00_MEMORY_H
 
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 struct G00_MemoryConfig {

@@ -1,7 +1,6 @@
 #ifndef G00_DATABASE_H
 #define G00_DATABASE_H
 
-#include <stdio.h>
 #include <sqlite/sqlite3.h>
 
 enum G00_DatabaseInitResult {

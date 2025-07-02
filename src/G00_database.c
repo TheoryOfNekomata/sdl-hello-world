@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "G00_database.h"
 
 enum G00_DatabaseInitResult G00_DatabaseInit(sqlite3** db) {

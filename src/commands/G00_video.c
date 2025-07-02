@@ -1,5 +1,6 @@
-#include "../G00_video.h"
-#include "../G00_command.h"
+#include <stdio.h>
+
+#include "../G00_commands.h"
 
 int G00_XCommandVideoScreenSize(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;

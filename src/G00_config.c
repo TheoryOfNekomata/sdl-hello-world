@@ -1,5 +1,6 @@
 #include "G00_config.h"
 #include "G00_command.h"
+#include "G00_commands.h"
 
 int G00_StringIndexOf(char* haystack, char* needle) {
 	char* result = strstr(haystack, needle);
@@ -12,22 +13,22 @@ int G00_StringIndexOf(char* haystack, char* needle) {
 int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[255], char args[255], struct G00_App* app) {
 	unsigned int i = 0;
 	do {
-		if (!strcmpi(command, G00_CONFIG_COMMAND_MAPPING[i].name)) {
-			if (!G00_CONFIG_COMMAND_MAPPING[i].execute_fn) {
+		if (!strcmpi(command, G00_COMMAND_ENTRIES[i].name)) {
+			if (!G00_COMMAND_ENTRIES[i].execute_fn) {
 				fprintf(stdout, "%s:%u - WRN003: Command \"%s\" not yet implemented, performing noop\n", path, line, command);
 				return 1;
 			}
 
 			int command_result = 1;
 			if (G00_StringIndexOf(command, "video_") == 0) {
-				G00_CommandVideo* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
-				command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args, &app->video);
+				G00_CommandVideo* execute_fn = G00_COMMAND_ENTRIES[i].execute_fn;
+				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args, &app->video);
 			} else if (G00_StringIndexOf(command, "memory_") == 0) {
-				G00_CommandMemory* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
-				command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args, &app->memory);
+				G00_CommandMemory* execute_fn = G00_COMMAND_ENTRIES[i].execute_fn;
+				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args, &app->memory);
 			} else {
-				G00_Command* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
-				command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args);
+				G00_Command* execute_fn = G00_COMMAND_ENTRIES[i].execute_fn;
+				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args);
 			}
 
 			if (command_result < 0) {
@@ -38,7 +39,7 @@ int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[2
 			return command_result;
 		}
 		i += 1;
-	} while (G00_CONFIG_COMMAND_MAPPING[i].name != NULL);
+	} while (G00_COMMAND_ENTRIES[i].name != NULL);
 
 	fprintf(stderr, "%s:%u - ERR001: Unknown command \"%s\"\n", path, line, command);
 	return -1;

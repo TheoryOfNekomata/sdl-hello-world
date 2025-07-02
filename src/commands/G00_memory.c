@@ -1,6 +1,7 @@
+#include <stdio.h>
+
 #include "../G00_asset.h"
-#include "../G00_memory.h"
-#include "../G00_command.h"
+#include "../G00_commands.h"
 
 int G00_XCommandMemoryAssetLoad(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_MemoryState* memory) {
 	char path[255];

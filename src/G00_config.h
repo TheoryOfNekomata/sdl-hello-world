@@ -1,18 +1,53 @@
 #ifndef G00_CONFIG_H
 #define G00_CONFIG_H
 
-#include <stdio.h>
-#include <string.h>
-
 #include "G00_database.h"
 #include "G00_video.h"
 #include "G00_memory.h"
+
+enum G00_UINodeType {
+  G00_UI_NODE_TYPE_MENU,
+  G00_UI_NODE_TYPE_LABEL,
+  G00_UI_NODE_TYPE_ITEM,
+};
+
+struct G00_UILabelNode {
+  enum G00_UINodeType type;
+  char* title;
+};
+
+struct G00_UIItemNode {
+  enum G00_UINodeType type;
+  char* script_commands;
+  char* title;
+  char* description_text;
+};
+
+struct G00_UIMenuNode {
+  enum G00_UINodeType type;
+  char* label;
+};
+
+union G00_UINode {
+  struct G00_UIMenuNode menu;
+  struct G00_UIItemNode item;
+  struct G00_UILabelNode label;
+};
+
+struct G00_UINodeList {
+  struct G00_UIMenuNode* data;
+  struct G00_UINodeList* next;
+};
 
 struct G00_App {
   sqlite3* db;
   unsigned long long ticks;
   struct G00_Video video;
   struct G00_MemoryState memory;
+  struct G00_UINodeList* ui_root;
+
+  struct G00_UIMenuNode* current_menu;
+  struct G00_UIItemNode* current_item;
 };
 
 enum G00_CommandArgumentType {
@@ -35,17 +70,11 @@ struct G00_CommandArgumentDefinition {
   struct G00_CommandArgument* defs;
 };
 
-typedef int G00_Command(char*, struct G00_CommandArgumentDefinition);
-typedef int G00_CommandVideo(char*, struct G00_CommandArgumentDefinition, struct G00_Video*);
-typedef int G00_CommandMemory(char*, struct G00_CommandArgumentDefinition, struct G00_MemoryState*);
-
-struct G00_ConfigCommandMappingEntry {
+struct G00_CommandEntry {
   const char* name;
   void* execute_fn;
   struct G00_CommandArgumentDefinition args;
 };
-
-static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[];
 
 void G00_ConfigExecuteScript(const char*, struct G00_App*);
 

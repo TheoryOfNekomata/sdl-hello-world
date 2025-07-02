@@ -1,3 +1,5 @@
+#include <SDL3_image/SDL_image.h>
+
 #include "G00_video.h"
 
 enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video) {
