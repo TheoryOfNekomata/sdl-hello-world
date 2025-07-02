@@ -1,6 +1,6 @@
 #include "G00_video.h"
 
-enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video, struct G00_VideoConfig config) {
+enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video) {
 	if (!video) {
 		return G00_VIDEO_INIT_RESULT_UNKNOWN_VIDEO_STATE;
 	}
@@ -8,15 +8,6 @@ enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video, struct G00_Video
 	if (!video->app) {
 		return G00_VIDEO_INIT_RESULT_UNBOUND_VIDEO_STATE;
 	}
-
-	video->config.screen_width = config.screen_width;
-	video->config.screen_height = config.screen_height;
-	video->config.aspect_ratio = (float) config.screen_width / (float) config.screen_height;
-	video->config.frames_per_second = config.frames_per_second;
-	video->config.millis_per_tick = config.millis_per_tick;
-	video->config.max_loaded_fonts = config.max_loaded_fonts;
-	video->config.max_loaded_textures = config.max_loaded_textures;
-	video->config.max_loaded_sprites = config.max_loaded_sprites;
 
 	video->window = SDL_CreateWindow(G00_APP_NAME, video->config.screen_width, video->config.screen_height, 0);
 	if (video->window == NULL) {
@@ -39,6 +30,14 @@ enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video, struct G00_Video
 	memset(video->loaded_sprites, 0, loaded_sprites_len);
 
 	return G00_VIDEO_INIT_RESULT_OK;
+}
+
+int G00_VideoUpdateWindow(struct G00_Video* video) {
+	if (SDL_SetWindowSize(video->window, video->config.screen_width, video->config.screen_height)) {
+		return 0;
+	}
+
+	return 1;
 }
 
 void G00_VideoUpdate(struct G00_Video* video, unsigned long app_ticks) {

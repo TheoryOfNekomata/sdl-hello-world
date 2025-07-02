@@ -1,13 +1,13 @@
 #include "../G00_command.h"
 
-int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_defs, unsigned int* out0_parsed_args, ...) {
+int G00_ConfigParseArgs(char input[255], struct G00_CommandArgumentDefinition arg_defs, unsigned int* out0_parsed_args, ...) {
 	char buffer[255];
 	strncpy(buffer, input, sizeof(buffer));
 	buffer[sizeof(buffer) - 1] = '\0';
 
 	char *p = buffer;
 	va_list args;
-	va_start(args, arg_defs);
+	va_start(args, out0_parsed_args);
 
 	unsigned char parsed_args = 0;
 	for (size_t i = 0; ; i += 1) {
@@ -40,7 +40,7 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 		char* endptr = NULL;
 		errno = 0;
 
-		if (arg_defs.defs[i].type == G00_CONFIG_ARGUMENT_TYPE_U32) {
+		if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_U32) {
 			unsigned int* out = va_arg(args, unsigned int*);
 			unsigned int val = strtoul(p, &endptr, 10);
 			if (endptr == p || errno != 0) {
@@ -49,7 +49,7 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 				return -2;
 			}
 			*out = val;
-		} else if (arg_defs.defs[i].type == G00_CONFIG_ARGUMENT_TYPE_U8) {
+		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_U8) {
 			unsigned char* out = va_arg(args, unsigned char*);
 			unsigned long val = strtoul(p, &endptr, 10);
 			if (endptr == p || errno != 0) {
@@ -58,7 +58,7 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 				return -2;
 			}
 			*out = (unsigned char) val;
-		} else if (arg_defs.defs[i].type == G00_CONFIG_ARGUMENT_TYPE_U16) {
+		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_U16) {
 			unsigned short* out = va_arg(args, unsigned short*);
 			unsigned long val = strtoul(p, &endptr, 10);
 			if (endptr == p || errno != 0) {
@@ -67,7 +67,7 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 				return -2;
 			}
 			*out = (unsigned short) val;
-		} else if (arg_defs.defs[i].type == G00_CONFIG_ARGUMENT_TYPE_U64) {
+		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_U64) {
 			unsigned long long* out = va_arg(args, unsigned long long*);
 			unsigned long long val = strtoull(p, &endptr, 10);
 			if (endptr == p || errno != 0) {
@@ -76,7 +76,7 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 				return -2;
 			}
 			*out = val;
-		} else if (arg_defs.defs[i].type == G00_CONFIG_ARGUMENT_TYPE_STRING) {
+		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_STRING) {
 			char *dest = va_arg(args, char*);
 			unsigned int maxlen = 255;
 
@@ -95,7 +95,7 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 
 			strncpy(dest, p, len);
 			dest[len] = '\0'; // null-terminate
-		} else if (arg_defs.defs[i].type == G00_CONFIG_ARGUMENT_TYPE_F32) {
+		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_F32) {
 			float* out = va_arg(args, float*);
 			float val = strtof(p, &endptr);
 			if (endptr == p || errno != 0) {
@@ -130,24 +130,24 @@ int G00_ConfigParseArgs(char input[255], struct G00_ConfigCommandArguments arg_d
 	return 0;
 }
 
-int G00_ConfigCommandGetHelpArgType(enum G00_ConfigArgumentType type, char(* out0_str)[8]) {
+int G00_ConfigCommandGetHelpArgType(enum G00_CommandArgumentType type, char(* out0_str)[8]) {
 	switch (type) {
-		case G00_CONFIG_ARGUMENT_TYPE_U8:
+		case G00_COMMAND_ARGUMENT_TYPE_U8:
 			memcpy(out0_str, "u8", 8);
 			return 0;
-		case G00_CONFIG_ARGUMENT_TYPE_U16:
+		case G00_COMMAND_ARGUMENT_TYPE_U16:
 			memcpy(out0_str, "u16", 8);
 			return 0;
-		case G00_CONFIG_ARGUMENT_TYPE_U32:
+		case G00_COMMAND_ARGUMENT_TYPE_U32:
 			memcpy(out0_str, "u32", 8);
 			return 0;
-		case G00_CONFIG_ARGUMENT_TYPE_U64:
+		case G00_COMMAND_ARGUMENT_TYPE_U64:
 			memcpy(out0_str, "u64", 8);
 			return 0;
-		case G00_CONFIG_ARGUMENT_TYPE_F32:
+		case G00_COMMAND_ARGUMENT_TYPE_F32:
 			memcpy(out0_str, "f32", 8);
 			return 0;
-		case G00_CONFIG_ARGUMENT_TYPE_STRING:
+		case G00_COMMAND_ARGUMENT_TYPE_STRING:
 			memcpy(out0_str, "str", 8);
 			return 0;
 		default:
@@ -158,7 +158,7 @@ int G00_ConfigCommandGetHelpArgType(enum G00_ConfigArgumentType type, char(* out
 	return -1;
 }
 
-int G00_CommandHelp(char args[255], struct G00_ConfigCommandArguments arg_defs, struct G00_Config* ref_config) {
+int G00_CommandHelp(char args[255], struct G00_CommandArgumentDefinition arg_defs) {
 	char command_name[255];
 	char arg_type_str[8];
 	unsigned int args_count = 0;

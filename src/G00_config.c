@@ -1,7 +1,15 @@
 #include "G00_config.h"
 #include "G00_command.h"
 
-int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[255], char args[255], struct G00_Config* out0_config) {
+int G00_StringIndexOf(char* haystack, char* needle) {
+	char* result = strstr(haystack, needle);
+	if (result == NULL) {
+		return -1;
+	}
+	return (int) (result - haystack);
+}
+
+int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[255], char args[255], struct G00_App* app) {
 	unsigned int i = 0;
 	do {
 		if (!strcmpi(command, G00_CONFIG_COMMAND_MAPPING[i].name)) {
@@ -10,8 +18,18 @@ int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[2
 				return 1;
 			}
 
-			G00_ConfigCommand* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
-			int command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args, out0_config);
+			int command_result = 1;
+			if (G00_StringIndexOf(command, "video_") == 0) {
+				G00_CommandVideo* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
+				command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args, &app->video);
+			} else if (G00_StringIndexOf(command, "memory_") == 0) {
+				G00_CommandMemory* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
+				command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args, &app->memory);
+			} else {
+				G00_Command* execute_fn = G00_CONFIG_COMMAND_MAPPING[i].execute_fn;
+				command_result = execute_fn(args, G00_CONFIG_COMMAND_MAPPING[i].args);
+			}
+
 			if (command_result < 0) {
 				fprintf(stderr, "%s:%u - ERR002: Command \"%s\" error (return code %d)\n", path, line, command, command_result);
 			} else if (command_result > 0) {
@@ -39,7 +57,7 @@ enum G00_ConfigCommandType : unsigned char {
 	G00_CONFIG_COMMAND_TYPE_IDEAL_FPS,
 };
 
-void G00_ConfigRead(const char* path, struct G00_Config* out0_config) {
+void G00_ConfigExecuteScript(const char* path, struct G00_App* app) {
 	FILE* fp = fopen(path, "r");
 	if (fp == NULL) {
 		return;
@@ -75,7 +93,7 @@ void G00_ConfigRead(const char* path, struct G00_Config* out0_config) {
 				if (c == '\n' || c == '\r') {
 					if (i > 0) {
 						command_str[i] = '\0';
-						G00_ConfigExecuteCommand(path, current_line, command_str, args_str, out0_config);
+						G00_ConfigExecuteCommand(path, current_line, command_str, args_str, app);
 						i = 0;
 						command_str[0] = '\0'; // reset command
 						args_str[0] = '\0'; // reset args
@@ -115,7 +133,7 @@ void G00_ConfigRead(const char* path, struct G00_Config* out0_config) {
 				}
 				if (c == '\n' || c == '\r') {
 					args_str[i] = '\0';
-					G00_ConfigExecuteCommand(path, current_line, command_str, args_str, out0_config);
+					G00_ConfigExecuteCommand(path, current_line, command_str, args_str, app);
 					mode = G00_CONFIG_PARSER_MODE_COMMAND;
 					i = 0;
 					command_str[0] = '\0';

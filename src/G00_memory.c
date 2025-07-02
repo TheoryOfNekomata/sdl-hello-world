@@ -1,9 +1,6 @@
 #include "G00_memory.h"
 
-int G00_MemoryInit(struct G00_MemoryState* memory, struct G00_MemoryConfig config) {
-	memory->config.pool_size_bytes = config.pool_size_bytes;
-	memory->config.pool_max_entries = config.pool_max_entries;
-
+int G00_MemoryInit(struct G00_MemoryState* memory) {
 	memory->data = malloc(memory->config.pool_size_bytes);
 	if (memory->data == NULL) {
 		fprintf(stderr, "Could not allocate pool.\n");
@@ -24,7 +21,7 @@ int G00_MemoryInit(struct G00_MemoryState* memory, struct G00_MemoryConfig confi
 	return 0;
 }
 
-int G00_MemoryRetrieveIndex(struct G00_MemoryState* memory, unsigned char* name, unsigned int* out0_index) {
+int G00_MemoryRetrieveIndex(struct G00_MemoryState* memory, char* name, unsigned int* out0_index) {
 	if (memory == NULL) {
 		return -1;
 	}

@@ -24,10 +24,10 @@ struct G00_MemoryState {
 	size_t asset_data_processed_bytes;
 };
 
-int G00_MemoryInit(struct G00_MemoryState*, struct G00_MemoryConfig);
+int G00_MemoryInit(struct G00_MemoryState*);
 
 void G00_MemoryTeardown(struct G00_MemoryState*);
 
-int G00_MemoryRetrieveIndex(struct G00_MemoryState*, unsigned char*, unsigned int* out0);
+int G00_MemoryRetrieveIndex(struct G00_MemoryState*, char*, unsigned int* out0);
 
 #endif

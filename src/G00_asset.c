@@ -195,7 +195,7 @@ int G00_AssetGenerateLoadOrder(const char* assets_dir_path) {
 			continue;
 		}
 
-		fprintf(fp, "load %s\n", entry->d_name);
+		fprintf(fp, "asset_load %s\n", entry->d_name);
 	}
 
 	fclose(fp);

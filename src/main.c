@@ -1,16 +1,6 @@
 #include "G00_asset.h"
 #include "G00_config.h"
-#include "G00_database.h"
-#include "G00_video.h"
-#include "G00_memory.h"
 
-struct G00_App {
-	struct G00_Config config;
-	sqlite3* db;
-	unsigned long long ticks;
-	struct G00_Video video;
-	struct G00_MemoryState memory;
-};
 
 enum G00_AppInitResult {
 	G00_APP_INIT_RESULT_OK = 0,
@@ -21,26 +11,11 @@ enum G00_AppInitResult {
 	G00_APP_INIT_RESULT_VIDEO_ERROR = -5,
 };
 
-int G00_AppApplyConfig(struct G00_App* app) {
-	app->video.config.aspect_ratio = app->config.video.aspect_ratio;
-	app->video.config.frames_per_second = app->config.video.frames_per_second;
-	app->video.config.millis_per_tick = app->config.video.millis_per_tick;
-	app->video.config.screen_width = app->config.video.screen_width;
-	app->video.config.screen_height = app->config.video.screen_height;
-	app->video.config.max_loaded_fonts = app->config.video.max_loaded_fonts;
-	app->video.config.max_loaded_sprites = app->config.video.max_loaded_sprites;
-	app->video.config.max_loaded_textures = app->config.video.max_loaded_textures;
-	app->memory.config.pool_max_entries = app->config.memory.pool_max_entries;
-	app->memory.config.pool_size_bytes = app->config.memory.pool_size_bytes;
-	return 0;
-}
-
 enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) {
-	app->config.app = app;
-	G00_ConfigRead("default.app.cfg", &app->config);
-	G00_ConfigRead("autoexec.app.cfg", &app->config);
+	G00_ConfigExecuteScript("default.app.cfg", app);
+	G00_ConfigExecuteScript("autoexec.app.cfg", app);
 
-	int memory_result = G00_MemoryInit(&app->memory, app->config.memory);
+	int memory_result = G00_MemoryInit(&app->memory);
 	if (memory_result < 0) {
 		return G00_APP_INIT_RESULT_MEMORY_ERROR;
 	}
@@ -62,7 +37,7 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 
 	app->ticks = 0;
 	app->video.app = app;
-	if (G00_VideoInit(&app->video, app->config.video)) {
+	if (G00_VideoInit(&app->video)) {
 		return G00_APP_INIT_RESULT_VIDEO_ERROR;
 	}
 
@@ -91,8 +66,8 @@ int main(int argc, char* argv[]) {
 
 	// ---- script section
 
-	const float half_screen_x = app.config.video.screen_width / 2.f;
-	const float half_screen_y = app.config.video.screen_height / 2.f;
+	const float half_screen_x = app.video.config.screen_width / 2.f;
+	const float half_screen_y = app.video.config.screen_height / 2.f;
 
 	unsigned int font_asset_index;
 	if (G00_MemoryRetrieveIndex(&app.memory, "font-ui.ttf", &font_asset_index) < 0) {
@@ -120,7 +95,7 @@ int main(int argc, char* argv[]) {
 
 	app.video.loaded_sprites[text_sprite_index].rect = (SDL_FRect) {
 		.x = half_screen_x - (app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->w / 2.f),
-		.y = app.config.video.screen_height - app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->h,
+		.y = app.video.config.screen_height - app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->h,
 		.w = app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->w,
 		.h = app.video.loaded_textures[app.video.loaded_sprites[text_sprite_index].texture_index]->h,
 	};

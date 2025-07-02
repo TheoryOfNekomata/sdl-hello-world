@@ -17,6 +17,10 @@
 
 #include "G00_memory.h"
 
+struct G00_AssetConfig {
+	char assets_dir_relative_path[255];
+};
+
 int G00_AssetGenerateLoadOrder(const char*);
 
 int G00_AssetLoadFromOrder(const char*, struct G00_MemoryState* out0);

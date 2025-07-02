@@ -10,18 +10,18 @@
 
 #include "G00_config.h"
 
-G00_ConfigCommand G00_CommandHelp;
+G00_Command G00_CommandHelp;
 
-G00_ConfigCommand G00_CommandMemoryPoolSizeBytes;
-G00_ConfigCommand G00_CommandMemoryPoolMaxEntries;
+G00_CommandMemory G00_CommandMemoryPoolSizeBytes;
+G00_CommandMemory G00_CommandMemoryPoolMaxEntries;
 
-G00_ConfigCommand G00_CommandVideoScreenSize;
-G00_ConfigCommand G00_CommandVideoIdealFps;
-G00_ConfigCommand G00_CommandVideoMaxLoadedTextures;
-G00_ConfigCommand G00_CommandVideoMaxLoadedFonts;
-G00_ConfigCommand G00_CommandVideoMaxLoadedSprites;
+G00_CommandVideo G00_CommandVideoScreenSize;
+G00_CommandVideo G00_CommandVideoIdealFps;
+G00_CommandVideo G00_CommandVideoMaxLoadedTextures;
+G00_CommandVideo G00_CommandVideoMaxLoadedFonts;
+G00_CommandVideo G00_CommandVideoMaxLoadedSprites;
 
-int G00_ConfigParseArgs(char[255], struct G00_ConfigCommandArguments, unsigned int* out0, ...);
+int G00_ConfigParseArgs(char[255], struct G00_CommandArgumentDefinition, unsigned int* out0, ...);
 
 int G00_AppApplyConfig(struct G00_App* app);
 
@@ -32,10 +32,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 0,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "command",
-					.type = G00_CONFIG_ARGUMENT_TYPE_STRING,
+					.type = G00_COMMAND_ARGUMENT_TYPE_STRING,
 				},
 			},
 		},
@@ -46,14 +46,14 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 2,
 			.maximum = 2,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "width",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U32,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U32,
 				},
 				{
 					.name = "height",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U32,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U32,
 				},
 			},
 		}
@@ -64,10 +64,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "fps",
-					.type = G00_CONFIG_ARGUMENT_TYPE_F32,
+					.type = G00_COMMAND_ARGUMENT_TYPE_F32,
 				},
 			},
 		}
@@ -78,10 +78,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "bytes",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U64,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U64,
 				},
 			},
 		},
@@ -92,10 +92,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "bytes",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U32,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U32,
 				},
 			},
 		},
@@ -106,10 +106,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "bytes",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U8,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U8,
 				},
 			},
 		},
@@ -120,10 +120,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "bytes",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U8,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U8,
 				},
 			},
 		},
@@ -134,10 +134,10 @@ static struct G00_ConfigCommandMappingEntry G00_CONFIG_COMMAND_MAPPING[] = {
 		.args = {
 			.minimum = 1,
 			.maximum = 1,
-			.defs = (struct G00_ConfigArgument[]) {
+			.defs = (struct G00_CommandArgument[]) {
 				{
 					.name = "bytes",
-					.type = G00_CONFIG_ARGUMENT_TYPE_U8,
+					.type = G00_COMMAND_ARGUMENT_TYPE_U8,
 				},
 			},
 		},

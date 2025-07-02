@@ -51,9 +51,11 @@ enum G00_VideoInitResult {
 	G00_VIDEO_INIT_RESULT_COULD_NOT_CREATE_RENDERER = -3,
 };
 
-enum G00_VideoInitResult G00_VideoInit(struct G00_Video*, struct G00_VideoConfig);
+enum G00_VideoInitResult G00_VideoInit(struct G00_Video*);
 
 void G00_VideoUpdate(struct G00_Video*, unsigned long);
+
+int G00_VideoUpdateWindow(struct G00_Video*);
 
 // int G00_VideoLoadImageFromFile(struct G00_Video*, const char*, unsigned int* out0);
 
