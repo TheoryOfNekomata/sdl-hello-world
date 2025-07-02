@@ -1,6 +1,8 @@
+#include <stdio.h>
+
 #include "G00_config.h"
 
-enum G00_AppInitResult {
+enum G00_AppInitResult : int {
 	G00_APP_INIT_RESULT_OK = 0,
 	G00_APP_INIT_RESULT_MEMORY_ERROR = -1,
 	G00_APP_INIT_RESULT_DATABASE_ERROR = -2,
@@ -53,6 +55,7 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 		return G00_APP_INIT_RESULT_VIDEO_ERROR;
 	}
 
+	G00_UIInit(&app->ui);
 	G00_ConfigExecuteScript("default.menu.cfg", app);
 	return G00_APP_INIT_RESULT_OK;
 }
@@ -196,14 +199,12 @@ int G00_AppUpdate(struct G00_App* app) {
 		.h = app->video.loaded_textures[app->video.loaded_sprites[bg_image_sprite_index].texture_index]->h,
 	};
 
-	bool quit = false;
 	SDL_Event e;
-
 	const float parallax_offset = 16.f;
-	while (quit == false) {
+	while (app->flags.force_exit == false) {
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_EVENT_QUIT) {
-				quit = true;
+				app->flags.force_exit = true;
 			}
 
 			if (e.type == SDL_EVENT_MOUSE_MOTION) {

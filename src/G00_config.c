@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "G00_config.h"
 #include "G00_command.h"
 #include "G00_commands.h"
@@ -26,9 +28,12 @@ int G00_ConfigExecuteCommand(const char* path, unsigned int line, char command[2
 			} else if (G00_StringIndexOf(command, "memory_") == 0) {
 				G00_CommandMemory* execute_fn = G00_COMMAND_ENTRIES[i].execute_fn;
 				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args, &app->memory);
+			} else if (G00_StringIndexOf(command, "ui_") == 0) {
+				G00_CommandUI* execute_fn = G00_COMMAND_ENTRIES[i].execute_fn;
+				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args, &app->ui);
 			} else {
 				G00_Command* execute_fn = G00_COMMAND_ENTRIES[i].execute_fn;
-				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args);
+				command_result = execute_fn(args, G00_COMMAND_ENTRIES[i].args, app);
 			}
 
 			if (command_result < 0) {

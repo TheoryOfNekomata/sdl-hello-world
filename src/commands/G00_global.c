@@ -30,7 +30,12 @@ int G00_XCommandHelpGetArgType(enum G00_CommandArgumentType type, char(* out0_st
 	return -1;
 }
 
-int G00_XCommandHelp(char args[255], struct G00_CommandArgumentDefinition arg_defs) {
+int G00_XCommandExit(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_App* app) {
+	app->flags.force_exit = true;
+	return 0;
+}
+
+int G00_XCommandHelp(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_App* _unused) {
 	char command_name[255];
 	char arg_type_str[8];
 	unsigned int args_count = 0;

@@ -7,6 +7,70 @@
 
 #include "G00_command.h"
 
+static int parse_escaped_string(char *out, unsigned int maxlen, const char *start, const char **endptr) {
+	const char *p = start;
+	char quote = *p++;
+	int len = 0;
+
+	while (*p && *p != quote) {
+		if (len >= maxlen - 1) return -1;
+
+		if (*p == '\\') {
+			p++;
+			switch (*p) {
+				case 'n': out[len++] = '\n'; break;
+				case 't': out[len++] = '\t'; break;
+				case 'r': out[len++] = '\r'; break;
+				case '\\': out[len++] = '\\'; break;
+				case '"': out[len++] = '"'; break;
+				case '\'': out[len++] = '\''; break;
+				case '0': out[len++] = '\0'; break;
+				case '\0': return -1;
+				default: out[len++] = *p; break;
+			}
+		} else {
+			out[len++] = *p;
+		}
+		p++;
+	}
+
+	if (*p != quote) return -1;
+	out[len] = '\0';
+	*endptr = p + 1;
+	return 0;
+}
+
+static int parse_unquoted_string(char *out, unsigned int maxlen, const char *start, const char **endptr) {
+	const char *p = start;
+	int len = 0;
+
+	while (*p && !isspace((unsigned char)*p)) {
+		if (len >= maxlen - 1) return -1;
+
+		if (*p == '\\') {
+			p++;
+			switch (*p) {
+				case 'n': out[len++] = '\n'; break;
+				case 't': out[len++] = '\t'; break;
+				case 'r': out[len++] = '\r'; break;
+				case '\\': out[len++] = '\\'; break;
+				case '"': out[len++] = '"'; break;
+				case '\'': out[len++] = '\''; break;
+				case '0': out[len++] = '\0'; break;
+				case '\0': return -1;
+				default: out[len++] = *p; break;
+			}
+		} else {
+			out[len++] = *p;
+		}
+		p++;
+	}
+
+	out[len] = '\0';
+	*endptr = p;
+	return 0;
+}
+
 int G00_CommandParseArgs(char input[255], struct G00_CommandArgumentDefinition arg_defs, unsigned int* out0_parsed_args, ...) {
 	char buffer[255];
 	strncpy(buffer, input, sizeof(buffer));
@@ -24,7 +88,9 @@ int G00_CommandParseArgs(char input[255], struct G00_CommandArgumentDefinition a
 
 		if (*p == '\0') {
 			if (parsed_args == 0) {
-				*out0_parsed_args = parsed_args;
+				if (out0_parsed_args != NULL) {
+					*out0_parsed_args = parsed_args;
+				}
 				va_end(args);
 				return 1;
 			}
@@ -87,21 +153,18 @@ int G00_CommandParseArgs(char input[255], struct G00_CommandArgumentDefinition a
 			char *dest = va_arg(args, char*);
 			unsigned int maxlen = 255;
 
-			// Find end of token
-			endptr = p;
-			while (*endptr && !isspace((unsigned char)*endptr)) {
-				endptr += 1;
+			int result;
+			if (*p == '"' || *p == '\'') {
+				result = parse_escaped_string(dest, maxlen, p, &endptr);
+			} else {
+				result = parse_unquoted_string(dest, maxlen, p, &endptr);
 			}
 
-			size_t len = endptr - p;
-			if ((int)len >= maxlen) {
-				fprintf(stderr, "String too long at position %zu (max %d)\n", i, maxlen);
+			if (result != 0) {
+				fprintf(stderr, "Failed to parse string at position %zu\n", i);
 				va_end(args);
 				return -2;
 			}
-
-			strncpy(dest, p, len);
-			dest[len] = '\0'; // null-terminate
 		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_F32) {
 			float* out = va_arg(args, float*);
 			float val = strtof(p, &endptr);
@@ -132,7 +195,9 @@ int G00_CommandParseArgs(char input[255], struct G00_CommandArgumentDefinition a
 		return -4;
 	}
 
-	*out0_parsed_args = parsed_args;
+	if (out0_parsed_args != NULL) {
+		*out0_parsed_args = parsed_args;
+	}
 	va_end(args);
 	return 0;
 }

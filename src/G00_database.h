@@ -3,14 +3,14 @@
 
 #include <sqlite/sqlite3.h>
 
-enum G00_DatabaseInitResult {
+enum G00_DatabaseInitResult : int {
 	G00_DATABASE_INIT_RESULT_OK = 0,
 	G00_DATABASE_INIT_RESULT_COULD_NOT_OPEN_DATABASE = -1,
 };
 
 enum G00_DatabaseInitResult G00_DatabaseInit(sqlite3**);
 
-enum G00_DatabaseTeardownResult {
+enum G00_DatabaseTeardownResult : int {
 	G00_DATABASE_TEARDOWN_OK = 0,
 	G00_DATABASE_TEARDOWN_BUSY = -1,
 };
