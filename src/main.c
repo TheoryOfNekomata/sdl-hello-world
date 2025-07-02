@@ -79,6 +79,8 @@ int G00_AppUpdate(struct G00_App* app) {
 		fprintf(stdout, "Warning: Font loaded abnormally.\n");
 	}
 
+	// TODO draw menu
+
 	unsigned int text_sprite_index;
 	int text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, "Hello, world!", 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
 	if (text_sprite_load_result < 0) {

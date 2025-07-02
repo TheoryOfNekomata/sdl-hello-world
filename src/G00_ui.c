@@ -13,22 +13,32 @@ int G00_UIInit(struct G00_UIState* state) {
 }
 
 int G00_ListAppend(struct G00_ListNode** root, size_t len, void* data, struct G00_ListNode** out0_new_node) {
-	struct G00_ListNode** p = root;
+	struct G00_ListNode* p;
+
 	if (*root == NULL) {
 		*root = malloc(sizeof(struct G00_ListNode));
-		*p = *root;
-	} else {
-		*p = *root;
-		while ((*p)->next != NULL) {
-			*p = (*p)->next;
+		if (*root == NULL) {
+			return -1;
 		}
-		(*p)->next = malloc(sizeof(struct G00_ListNode));
-		*p = (*p)->next;
+		p = *root;
+	} else {
+		p = *root;
+		while (p->next != NULL) {
+			p = p->next;
+		}
+		p->next = malloc(sizeof(struct G00_ListNode));
+		if (p->next == NULL) {
+			return -1;
+		}
+		p = p->next;
 	}
 
-	(*p)->data = malloc(len);
-	(*p)->next = NULL;
-	memcpy((*p)->data, data, len);
-	*out0_new_node = *p;
+	p->data = malloc(len);
+	if (p->data == NULL) {
+		return -1;
+	}
+	p->next = NULL;
+	memcpy(p->data, data, len);
+	*out0_new_node = p;
 	return 0;
 }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "../G00_commands.h"
-#include "lzma/7zFile.h"
 
 int G00_XCommandUIMsgKey(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_UIState* ui) {
 	struct G00_MessageEntry new_entry;
@@ -27,7 +26,7 @@ int G00_XCommandUIMenu(char args[255], struct G00_CommandArgumentDefinition arg_
 	}
 
 	struct G00_ListNode* added_entry;
-	G00_ListAppend(&ui->messages, sizeof(struct G00_UIMenuNode), &new_node, &added_entry);
+	G00_ListAppend(&ui->menus, sizeof(struct G00_UIMenuNode), &new_node, &added_entry);
 	struct G00_UIMenuNode* added_entry_data = added_entry->data;
 	fprintf(stdout, "Registered menu %s\n", added_entry_data->label);
 	ui->current_menu = added_entry_data;
@@ -101,12 +100,41 @@ int G00_XCommandUILabel(char args[255], struct G00_CommandArgumentDefinition arg
 }
 
 int G00_XCommandUIMenuPush(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_UIState* ui) {
-	// TODO
-	return 0;
+	char menu_id[255];
+	if (G00_CommandParseArgs(args, arg_defs, NULL, menu_id) < 0) {
+		return -1;
+	}
+
+	if (ui->history_stack_index == 32) {
+		// overflow
+		return -2;
+	}
+
+	struct G00_ListNode** p = &ui->menus;
+	while (*p != NULL) {
+		struct G00_UIMenuNode* data = (*p)->data;
+		if (!strcmp(data->label, menu_id)) {
+			ui->history_stack[ui->history_stack_index] = data;
+			fprintf(stdout, "Pushed history item %s\n", ui->history_stack[ui->history_stack_index]->label);
+			ui->history_stack_index += 1;
+			return 0;
+		}
+		*p = (*p)->next;
+	}
+
+	return 1;
 }
 
 int G00_XCommandUIMenuPop(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_UIState* ui) {
-	// TODO
+	if (ui->history_stack_index == 0) {
+		// underflow
+		return -1;
+	}
+
+	ui->history_stack_index -= 1;
+	fprintf(stdout, "Popped history item %s\n", ui->history_stack[ui->history_stack_index]->label);
+	ui->history_stack[ui->history_stack_index] = NULL;
+
 	return 0;
 }
 

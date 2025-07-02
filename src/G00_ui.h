@@ -47,6 +47,8 @@ struct G00_UIState {
 	union G00_UIMenuChildNode* current_item;
 
 	struct G00_ListNode* messages;
+	unsigned char history_stack_index;
+	struct G00_UIMenuNode* history_stack[32];
 };
 
 int G00_UIInit(struct G00_UIState*);
