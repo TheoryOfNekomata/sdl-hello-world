@@ -12,6 +12,7 @@ struct G00_MessageEntry {
 };
 
 enum G00_UINodeType : unsigned char {
+	G00_UI_NODE_TYPE_NODE,
 	G00_UI_NODE_TYPE_MENU,
 	G00_UI_NODE_TYPE_LABEL,
 	G00_UI_NODE_TYPE_ITEM,
@@ -29,7 +30,12 @@ struct G00_UIItemNode {
 	char description_text[255];
 };
 
+struct G00_UINode {
+	enum G00_UINodeType type;
+};
+
 union G00_UIMenuChildNode {
+	struct G00_UINode node;
 	struct G00_UILabelNode label;
 	struct G00_UIItemNode item;
 };

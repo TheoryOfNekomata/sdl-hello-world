@@ -109,7 +109,7 @@ static struct G00_CommandEntry G00_COMMAND_ENTRIES[] = {
 			.maximum = 1,
 			.defs = (struct G00_CommandArgument[]){
 				{
-					.name = "bytes",
+					.name = "count",
 					.type = G00_COMMAND_ARGUMENT_TYPE_U8,
 				},
 			},
@@ -123,7 +123,7 @@ static struct G00_CommandEntry G00_COMMAND_ENTRIES[] = {
 			.maximum = 1,
 			.defs = (struct G00_CommandArgument[]){
 				{
-					.name = "bytes",
+					.name = "count",
 					.type = G00_COMMAND_ARGUMENT_TYPE_U8,
 				},
 			},
@@ -137,7 +137,7 @@ static struct G00_CommandEntry G00_COMMAND_ENTRIES[] = {
 			.maximum = 1,
 			.defs = (struct G00_CommandArgument[]){
 				{
-					.name = "bytes",
+					.name = "count",
 					.type = G00_COMMAND_ARGUMENT_TYPE_U8,
 				},
 			},

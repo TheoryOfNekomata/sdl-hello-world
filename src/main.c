@@ -79,10 +79,13 @@ int G00_AppUpdate(struct G00_App* app) {
 		fprintf(stdout, "Warning: Font loaded abnormally.\n");
 	}
 
+
 	// TODO draw menu
 
+	struct G00_UIMenuNode* displayed_menu = app->ui.history_stack[app->ui.history_stack_index - 1];
+
 	unsigned int text_sprite_index;
-	int text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, "Hello, world!", 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
+	int text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, displayed_menu->label, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
 	if (text_sprite_load_result < 0) {
 		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 		return -1;
@@ -96,6 +99,51 @@ int G00_AppUpdate(struct G00_App* app) {
 		.w = app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->w,
 		.h = app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->h,
 	};
+
+	struct G00_ListNode* child = displayed_menu->children;
+	unsigned char menu_y = 0;
+	do {
+		union G00_UIMenuChildNode* node_data = child->data;
+		switch (node_data->node.type) {
+			case G00_UI_NODE_TYPE_ITEM:
+				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, node_data->item.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
+				if (text_sprite_load_result < 0) {
+					fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+					return -1;
+				} if (text_sprite_load_result > 0) {
+					fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
+				}
+				app->video.loaded_sprites[text_sprite_index].rect = (SDL_FRect) {
+					.x = 100,
+					//.y = app->video.config.screen_height - ,
+					.y = 300 + menu_y * (app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->h * 1.5f),
+					.w = app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->w,
+					.h = app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->h,
+				};
+				break;
+			case G00_UI_NODE_TYPE_LABEL:
+				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, node_data->label.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
+				if (text_sprite_load_result < 0) {
+					fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+					return -1;
+				} if (text_sprite_load_result > 0) {
+					fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
+				}
+				app->video.loaded_sprites[text_sprite_index].rect = (SDL_FRect) {
+					.x = 100,
+					//.y = app->video.config.screen_height - app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->h,
+					.y = 300 + menu_y * (app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->h * 1.5f),
+					.w = app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->w,
+					.h = app->video.loaded_textures[app->video.loaded_sprites[text_sprite_index].texture_index]->h,
+				};
+				break;
+			default:
+				// TODO issue warning
+				break;
+		}
+		child = child->next;
+		menu_y += 1;
+	} while (child != NULL);
 
 	unsigned int fg_image_asset_index;
 	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &fg_image_asset_index) < 0) {
