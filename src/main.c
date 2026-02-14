@@ -60,9 +60,8 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 	return G00_APP_INIT_RESULT_OK;
 }
 
-int G00_AppUpdate(struct G00_App* app) {
+int G00_AppRenderMenu(struct G00_App* app) {
 	const float half_screen_x = app->video.config.screen_width / 2.f;
-	const float half_screen_y = app->video.config.screen_height / 2.f;
 
 	unsigned int font_asset_index;
 	if (G00_MemoryRetrieveIndex(&app->memory, "font-ui.ttf", &font_asset_index) < 0) {
@@ -78,9 +77,6 @@ int G00_AppUpdate(struct G00_App* app) {
 	} if (font_load_result > 0) {
 		fprintf(stdout, "Warning: Font loaded abnormally.\n");
 	}
-
-
-	// TODO draw menu
 
 	struct G00_UIMenuNode* displayed_menu = app->ui.history_stack[app->ui.history_stack_index - 1];
 
@@ -144,6 +140,18 @@ int G00_AppUpdate(struct G00_App* app) {
 		child = child->next;
 		menu_y += 1;
 	} while (child != NULL);
+
+	return 0;
+}
+
+int G00_AppUpdate(struct G00_App* app) {
+	const float half_screen_x = app->video.config.screen_width / 2.f;
+	const float half_screen_y = app->video.config.screen_height / 2.f;
+
+	int render_menu_result = G00_AppRenderMenu(app);
+	if (render_menu_result != 0) {
+		return render_menu_result;
+	}
 
 	unsigned int fg_image_asset_index;
 	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &fg_image_asset_index) < 0) {
