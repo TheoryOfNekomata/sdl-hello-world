@@ -152,6 +152,7 @@ int G00_CommandParseArgs(char input[255], struct G00_CommandArgumentDefinition a
 		} else if (arg_defs.defs[i].type == G00_COMMAND_ARGUMENT_TYPE_STRING) {
 			char *dest = va_arg(args, char*);
 			unsigned int maxlen = 255;
+			memset(dest, 0, maxlen); // reset string
 
 			int result;
 			if (*p == '"' || *p == '\'') {

@@ -60,17 +60,14 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 	return G00_APP_INIT_RESULT_OK;
 }
 
-int G00_AppRenderMenu(struct G00_App* app) {
-	const float half_screen_x = app->video.config.screen_width / 2.f;
-
+int G00_AppLoadMenuAssets(struct G00_App* app, unsigned int* font_index, unsigned int* fg_image_sprite_index, SDL_Surface** fg_surface) {
 	unsigned int font_asset_index;
 	if (G00_MemoryRetrieveIndex(&app->memory, "font-ui.ttf", &font_asset_index) < 0) {
 		fprintf(stderr, "Unable to retrieve font!\n");
 		return -1;
 	}
 
-	unsigned int font_index;
-	int font_load_result = G00_VideoLoadFont(&app->video, app->memory.entries[font_asset_index].len, app->memory.data + app->memory.entries[font_asset_index].offset, 16.f, &font_index);
+	int font_load_result = G00_VideoLoadFont(&app->video, app->memory.entries[font_asset_index].len, app->memory.data + app->memory.entries[font_asset_index].offset, 16.f, font_index);
 	if (font_load_result < 0) {
 		fprintf(stderr, "Unable to load font! SDL_Error: %s\n", SDL_GetError());
 		return -1;
@@ -78,8 +75,37 @@ int G00_AppRenderMenu(struct G00_App* app) {
 		fprintf(stdout, "Warning: Font loaded abnormally.\n");
 	}
 
-	struct G00_UIMenuNode* displayed_menu = app->ui.history_stack[app->ui.history_stack_index - 1];
+	unsigned int fg_image_asset_index;
+	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &fg_image_asset_index) < 0) {
+		fprintf(stderr, "Unable to retrieve image!\n");
+		return -1;
+	}
 
+	int fg_sprite_load_result = G00_VideoLoadImageSprite(
+		&app->video,
+		app->memory.entries[fg_image_asset_index].len,
+		app->memory.data + app->memory.entries[fg_image_asset_index].offset,
+		fg_image_sprite_index,
+		fg_surface
+	);
+	if (fg_sprite_load_result < 0) {
+		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+		return -1;
+	} if (fg_sprite_load_result > 0) {
+		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
+	}
+
+	return 0;
+}
+
+int G00_AppRenderMenu(struct G00_App* app, unsigned int font_index) {
+	if (app->ui.history_stack_index == 0) {
+		// no menu + assets to load, stack is empty
+		return 0;
+	}
+
+	struct G00_UIMenuNode* displayed_menu = app->ui.history_stack[app->ui.history_stack_index - 1];
+	const float half_screen_x = app->video.config.screen_width / 2.f;
 	unsigned int text_sprite_index;
 	int text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, displayed_menu->label, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
 	if (text_sprite_load_result < 0) {
@@ -98,11 +124,24 @@ int G00_AppRenderMenu(struct G00_App* app) {
 
 	struct G00_ListNode* child = displayed_menu->children;
 	unsigned char menu_y = 0;
-	do {
+	while (child != NULL) {
 		union G00_UIMenuChildNode* node_data = child->data;
+		struct G00_ListNode* message_entry = app->ui.messages;
+		struct G00_MessageEntry* node_message = NULL;
 		switch (node_data->node.type) {
 			case G00_UI_NODE_TYPE_ITEM:
-				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, node_data->item.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
+				while (message_entry != NULL) {
+					if (
+						message_entry->data != NULL &&
+						!strcmp(((struct G00_MessageEntry*) message_entry->data)->key, node_data->item.title)
+					) {
+						node_message = message_entry->data;
+						break;
+					}
+					message_entry = message_entry->next;
+				}
+
+				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, node_message != NULL ? node_message->fallback_value : node_data->item.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &text_sprite_index);
 				if (text_sprite_load_result < 0) {
 					fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 					return -1;
@@ -139,44 +178,25 @@ int G00_AppRenderMenu(struct G00_App* app) {
 		}
 		child = child->next;
 		menu_y += 1;
-	} while (child != NULL);
+	}
 
 	return 0;
 }
 
 int G00_AppUpdate(struct G00_App* app) {
-	const float half_screen_x = app->video.config.screen_width / 2.f;
-	const float half_screen_y = app->video.config.screen_height / 2.f;
+	unsigned int font_index;
+	unsigned int fg_image_sprite_index;
+	SDL_Surface* fg_surface;
 
-	int render_menu_result = G00_AppRenderMenu(app);
+	int menu_assets_load_result = G00_AppLoadMenuAssets(app, &font_index, &fg_image_sprite_index, &fg_surface);
+	if (menu_assets_load_result < 0) {
+		return -1;
+	}
+
+	int render_menu_result = G00_AppRenderMenu(app, font_index);
 	if (render_menu_result != 0) {
 		return render_menu_result;
 	}
-
-	unsigned int fg_image_asset_index;
-	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &fg_image_asset_index) < 0) {
-		fprintf(stderr, "Unable to retrieve image!\n");
-		return -1;
-	}
-
-	SDL_Surface* fg_surface;
-	unsigned int fg_image_sprite_index;
-	int fg_sprite_load_result = G00_VideoLoadImageSprite(
-		&app->video,
-		app->memory.entries[fg_image_asset_index].len,
-		app->memory.data + app->memory.entries[fg_image_asset_index].offset,
-		&fg_image_sprite_index,
-		&fg_surface
-	);
-	if (fg_sprite_load_result < 0) {
-		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
-		return -1;
-	} if (fg_sprite_load_result > 0) {
-		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
-	}
-
-	float base_fg_x = half_screen_x - (app->video.loaded_textures[app->video.loaded_sprites[fg_image_sprite_index].texture_index]->w / 2.f);
-	float base_fg_y = half_screen_y - (app->video.loaded_textures[app->video.loaded_sprites[fg_image_sprite_index].texture_index]->h / 2.f);
 
 	unsigned int fg_image_sprite_index_shadow0;
 	G00_VideoGenerateSurfaceSprite(&app->video, fg_surface, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0x00, .a = 0xFF }, &fg_image_sprite_index_shadow0);
@@ -190,6 +210,12 @@ int G00_AppUpdate(struct G00_App* app) {
 	unsigned int fg_image_sprite_index_shadow3;
 	G00_VideoGenerateSurfaceSprite(&app->video, fg_surface, (SDL_Color) { .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF }, &fg_image_sprite_index_shadow3);
 	SDL_DestroySurface(fg_surface);
+
+	const float half_screen_x = app->video.config.screen_width / 2.f;
+	const float half_screen_y = app->video.config.screen_height / 2.f;
+
+	float base_fg_x = half_screen_x - (app->video.loaded_textures[app->video.loaded_sprites[fg_image_sprite_index].texture_index]->w / 2.f);
+	float base_fg_y = half_screen_y - (app->video.loaded_textures[app->video.loaded_sprites[fg_image_sprite_index].texture_index]->h / 2.f);
 
 	app->video.loaded_sprites[fg_image_sprite_index].rect = (SDL_FRect) {
 		.x = base_fg_x,
