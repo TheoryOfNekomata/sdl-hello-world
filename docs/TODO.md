@@ -1,0 +1,1 @@
+- [ ] Make text rendering support recoloring (save surface data in sprite).

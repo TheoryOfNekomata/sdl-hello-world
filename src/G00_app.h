@@ -7,16 +7,18 @@
 #include "G00_ui.h"
 
 struct G00_GameState {
-	unsigned int font_index;
+	unsigned int menu_bg_asset_index; // memory
+	unsigned int menu_fg_asset_index;
+	unsigned int primary_font_asset_index;
 
-	unsigned int bg_image_asset_index; // memory
+	unsigned int primary_font_index;
 
-	unsigned int bg_image_sprite_index;
-	unsigned int fg_image_sprite_index;
-	unsigned int fg_image_sprite_index_shadow0;
-	unsigned int fg_image_sprite_index_shadow1;
-	unsigned int fg_image_sprite_index_shadow2;
-	unsigned int fg_image_sprite_index_shadow3;
+	unsigned int menu_bg_sprite_index;
+	unsigned int menu_fg_sprite_index;
+	unsigned int menu_fg_shadow0_sprite_index;
+	unsigned int menu_fg_shadow1_sprite_index;
+	unsigned int menu_fg_shadow2_sprite_index;
+	unsigned int menu_fg_shadow3_sprite_index;
 };
 
 struct G00_App {
