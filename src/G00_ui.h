@@ -20,11 +20,13 @@ enum G00_UINodeType : unsigned char {
 
 struct G00_UILabelNode {
 	enum G00_UINodeType type;
+	unsigned int sprite_index;
 	char title[255];
 };
 
 struct G00_UIItemNode {
 	enum G00_UINodeType type;
+	unsigned int sprite_index;
 	char title[255];
 	char script_commands[255];
 	char description_text[255];

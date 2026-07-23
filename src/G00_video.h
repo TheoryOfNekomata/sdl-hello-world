@@ -26,6 +26,7 @@ struct G00_VideoSprite {
 	enum G00_VideoLoadedObjectType type;
 	unsigned int texture_index;
 	SDL_FRect rect;
+	SDL_Color fill_color;
 };
 
 struct G00_Video {

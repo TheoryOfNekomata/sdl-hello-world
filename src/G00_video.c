@@ -150,7 +150,7 @@ void G00_VideoSurfaceSetNonAlphaPixelColor(SDL_Surface* copy, SDL_Color color) {
 }
 
 int G00_VideoGenerateSurfaceSprite(struct G00_Video* video, SDL_Surface* surface, SDL_Color color, unsigned int* out0_index) {
-	for (unsigned int i = 0; i < video->config.max_loaded_textures; i += 1) {
+	for (unsigned int i = 1; i < video->config.max_loaded_textures; i += 1) {
 		if (video->loaded_textures[i] != NULL) {
 			continue;
 		}
@@ -236,8 +236,8 @@ void G00_VideoUnloadObject(struct G00_Video* video, unsigned int index) {
 // 	return 1;
 // }
 
-int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, unsigned int* out0_texture_index) {
-	for (unsigned int i = 0; i < video->config.max_loaded_textures; i += 1) {
+int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, unsigned int* out0_sprite_index) {
+	for (unsigned int i = 1; i < video->config.max_loaded_textures; i += 1) {
 		if (video->loaded_textures[i] != NULL) {
 			continue;
 		}
@@ -260,7 +260,7 @@ int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index
 
 			video->loaded_sprites[j].type = G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE;
 			video->loaded_sprites[j].texture_index = i;
-			*out0_texture_index = j;
+			*out0_sprite_index = j;
 			return 0;
 		}
 	}
