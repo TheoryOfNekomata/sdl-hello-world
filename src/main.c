@@ -294,7 +294,7 @@ int G00_AppUpdate(struct G00_App* app) {
 				} else if (e.key.key == SDLK_DOWN) {
 						struct G00_ListNode* child = app->ui.current_menu->children;
 						while (child != NULL) {
-							if (child == app->ui.current_item) {
+							if (child->data == app->ui.current_item) {
 								if (child->next == NULL) {
 									app->ui.current_item = app->ui.current_menu->children->data;
 									break;
