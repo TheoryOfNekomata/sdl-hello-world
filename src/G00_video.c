@@ -138,14 +138,13 @@ void G00_VideoSurfaceSetNonAlphaPixelColor(SDL_Surface* copy, SDL_Color color) {
 }
 
 int G00_VideoGenerateSurfaceSprite(struct G00_Video* video, SDL_Surface* surface, SDL_Color color, unsigned int* out0_index) {
-	for (unsigned int i = 1; i < video->config.max_loaded_surfaces; i += 1) {
+	for (unsigned int i = 0; i <= video->config.max_loaded_surfaces; i += 1) {
 		if (video->loaded_surfaces[i] != NULL) {
 			continue;
 		}
 
-		SDL_Surface* copy = SDL_CreateSurfaceFrom(surface->w, surface->h, surface->format, surface->pixels, surface->pitch);
-		//G00_VideoSurfaceSetNonAlphaPixelColor(copy, color); // TODO: fix, because surface isn't recolored properly
-		video->loaded_surfaces[i] = copy;
+		video->loaded_surfaces[i] = SDL_DuplicateSurface(surface);
+		G00_VideoSurfaceSetNonAlphaPixelColor(video->loaded_surfaces[i], color);
 
 		for (unsigned int j = 0; j < video->config.max_loaded_sprites; j += 1) {
 			if (video->loaded_sprites[j].type != G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN) {

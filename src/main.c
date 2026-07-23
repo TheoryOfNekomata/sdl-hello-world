@@ -62,41 +62,6 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 	return G00_APP_INIT_RESULT_OK;
 }
 
-int G00_AppLoadMenuAssets(struct G00_App* app) {
-	if (G00_MemoryRetrieveIndex(&app->memory, "font-ui.ttf", &app->game_state.primary_font_asset_index) < 0) {
-		fprintf(stderr, "Unable to retrieve font!\n");
-		return -1;
-	}
-
-	int font_load_result = G00_VideoLoadFont(&app->video, app->memory.entries[app->game_state.primary_font_asset_index].len, app->memory.data + app->memory.entries[app->game_state.primary_font_asset_index].offset, 16.f, &app->game_state.primary_font_index);
-	if (font_load_result < 0) {
-		fprintf(stderr, "Unable to load font! SDL_Error: %s\n", SDL_GetError());
-		return -1;
-	} if (font_load_result > 0) {
-		fprintf(stdout, "Warning: Font loaded abnormally.\n");
-	}
-
-	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &app->game_state.menu_fg_asset_index) < 0) {
-		fprintf(stderr, "Unable to retrieve image!\n");
-		return -1;
-	}
-
-	int fg_sprite_load_result = G00_VideoLoadImageSprite(
-		&app->video,
-		app->memory.entries[app->game_state.menu_fg_asset_index].len,
-		app->memory.data + app->memory.entries[app->game_state.menu_fg_asset_index].offset,
-		&app->game_state.menu_fg_sprite_index
-	);
-	if (fg_sprite_load_result < 0) {
-		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
-		return -1;
-	} if (fg_sprite_load_result > 0) {
-		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
-	}
-
-	return 0;
-}
-
 int G00_AppRenderMenu(struct G00_App* app, unsigned int font_index) {
 	if (app->ui.history_stack_index == 0) {
 		// no menu + assets to load, stack is empty
@@ -188,9 +153,35 @@ int G00_AppRenderMenu(struct G00_App* app, unsigned int font_index) {
 }
 
 int G00_AppUpdate(struct G00_App* app) {
-	int menu_assets_load_result = G00_AppLoadMenuAssets(app);
-	if (menu_assets_load_result < 0) {
+	if (G00_MemoryRetrieveIndex(&app->memory, "font-ui.ttf", &app->game_state.primary_font_asset_index) < 0) {
+		fprintf(stderr, "Unable to retrieve font!\n");
 		return -1;
+	}
+
+	int font_load_result = G00_VideoLoadFont(&app->video, app->memory.entries[app->game_state.primary_font_asset_index].len, app->memory.data + app->memory.entries[app->game_state.primary_font_asset_index].offset, 16.f, &app->game_state.primary_font_index);
+	if (font_load_result < 0) {
+		fprintf(stderr, "Unable to load font! SDL_Error: %s\n", SDL_GetError());
+		return -1;
+	} if (font_load_result > 0) {
+		fprintf(stdout, "Warning: Font loaded abnormally.\n");
+	}
+
+	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &app->game_state.menu_fg_asset_index) < 0) {
+		fprintf(stderr, "Unable to retrieve image!\n");
+		return -1;
+	}
+
+	int fg_sprite_load_result = G00_VideoLoadImageSprite(
+		&app->video,
+		app->memory.entries[app->game_state.menu_fg_asset_index].len,
+		app->memory.data + app->memory.entries[app->game_state.menu_fg_asset_index].offset,
+		&app->game_state.menu_fg_sprite_index
+	);
+	if (fg_sprite_load_result < 0) {
+		fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
+		return -1;
+	} if (fg_sprite_load_result > 0) {
+		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 	}
 
 	SDL_Surface* fg_surface = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index];
@@ -202,14 +193,16 @@ int G00_AppUpdate(struct G00_App* app) {
 	const float half_screen_x = app->video.config.screen_width / 2.f;
 	const float half_screen_y = app->video.config.screen_height / 2.f;
 
-	float base_fg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.primary_font_index].surface_index]->w / 2.f);
-	float base_fg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.primary_font_index].surface_index]->h / 2.f);
+	float base_fg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index]->w / 2.f);
+	float base_fg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index]->h / 2.f);
 
-	app->video.loaded_sprites[app->game_state.primary_font_index].rect = (SDL_FRect) {
+	printf("%f %f\n", base_fg_x, base_fg_y);
+
+	app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect = (SDL_FRect) {
 		.x = base_fg_x,
 		.y = base_fg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.primary_font_index].surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.primary_font_index].surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index]->h,
 	};
 
 	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].rect = (SDL_FRect) {
@@ -308,8 +301,8 @@ int G00_AppUpdate(struct G00_App* app) {
 				app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].rect.x = base_bg_x + ((e.motion.x - half_screen_x) / half_screen_x * -parallax_offset);
 				app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].rect.y = base_bg_y + ((e.motion.y - half_screen_y) / half_screen_y * -parallax_offset);
 
-				app->video.loaded_sprites[app->game_state.primary_font_index].rect.x = base_fg_x + ((e.motion.x - half_screen_x) / half_screen_x * parallax_offset);
-				app->video.loaded_sprites[app->game_state.primary_font_index].rect.y = base_fg_y + ((e.motion.y - half_screen_y) / half_screen_y * parallax_offset);
+				app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect.x = base_fg_x + ((e.motion.x - half_screen_x) / half_screen_x * parallax_offset);
+				app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect.y = base_fg_y + ((e.motion.y - half_screen_y) / half_screen_y * parallax_offset);
 
 				app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
 				app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
