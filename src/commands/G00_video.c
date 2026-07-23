@@ -61,19 +61,19 @@ int G00_XCommandVideoIdealFps(char args[255], struct G00_CommandArgumentDefiniti
 	return 0;
 }
 
-int G00_XCommandVideoMaxLoadedTextures(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
+int G00_XCommandVideoMaxLoadedSurfaces(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_Video* video_state) {
 	unsigned int args_count = 0;
-	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_textures) < 0) {
+	if (G00_CommandParseArgs(args, arg_defs, &args_count, &video_state->config.max_loaded_surfaces) < 0) {
 		return -1;
 	}
 
 	if (args_count == 0) {
-		fprintf(stdout, "Video maximum loaded textures count is %u\n", video_state->config.max_loaded_textures);
+		fprintf(stdout, "Video maximum loaded surfaces count is %u\n", video_state->config.max_loaded_surfaces);
 		return 0;
 	}
 
-	if (!(16u <= video_state->config.max_loaded_textures && video_state->config.max_loaded_textures <= 255u)) {
-		video_state->config.max_loaded_textures = 16u;
+	if (!(16u <= video_state->config.max_loaded_surfaces && video_state->config.max_loaded_surfaces <= 255u)) {
+		video_state->config.max_loaded_surfaces = 16u;
 		// TODO update array
 		return 1;
 	}

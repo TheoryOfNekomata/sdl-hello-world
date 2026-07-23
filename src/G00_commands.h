@@ -12,7 +12,7 @@ G00_CommandMemory G00_XCommandMemoryAssetLoad;
 
 G00_CommandVideo G00_XCommandVideoScreenSize;
 G00_CommandVideo G00_XCommandVideoIdealFps;
-G00_CommandVideo G00_XCommandVideoMaxLoadedTextures;
+G00_CommandVideo G00_XCommandVideoMaxLoadedSurfaces;
 G00_CommandVideo G00_XCommandVideoMaxLoadedFonts;
 G00_CommandVideo G00_XCommandVideoMaxLoadedSprites;
 
@@ -102,8 +102,8 @@ static struct G00_CommandEntry G00_COMMAND_ENTRIES[] = {
 		},
 	},
 	{
-		.name = "video_max_loaded_textures",
-		.execute_fn = G00_XCommandVideoMaxLoadedTextures,
+		.name = "video_max_loaded_surfaces",
+		.execute_fn = G00_XCommandVideoMaxLoadedSurfaces,
 		.args = {
 			.minimum = 1,
 			.maximum = 1,

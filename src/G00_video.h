@@ -12,7 +12,7 @@ struct G00_VideoConfig {
 	float aspect_ratio;
 	float frames_per_second;
 	float millis_per_tick;
-	unsigned char max_loaded_textures;
+	unsigned char max_loaded_surfaces;
 	unsigned char max_loaded_fonts;
 	unsigned char max_loaded_sprites;
 };
@@ -24,7 +24,7 @@ enum G00_VideoLoadedObjectType : unsigned char {
 
 struct G00_VideoSprite {
 	enum G00_VideoLoadedObjectType type;
-	unsigned int texture_index;
+	unsigned int surface_index;
 	SDL_FRect rect;
 	SDL_Color fill_color;
 };
@@ -35,7 +35,7 @@ struct G00_Video {
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	struct G00_App* app;
-	SDL_Texture** loaded_textures;
+	SDL_Surface** loaded_surfaces;
 	TTF_Font** loaded_fonts;
 	struct G00_VideoSprite* loaded_sprites;
 };
@@ -58,7 +58,7 @@ int G00_VideoUpdateWindow(struct G00_Video*);
 
 // int G00_VideoLoadImageFromFile(struct G00_Video*, const char*, unsigned int* out0);
 
-int G00_VideoLoadImageSprite(struct G00_Video*, size_t, void*, unsigned int* out0, SDL_Surface** out1);
+int G00_VideoLoadImageSprite(struct G00_Video*, size_t, void*, unsigned int* out0);
 
 int G00_VideoGenerateSurfaceSprite(struct G00_Video*, SDL_Surface*, SDL_Color, unsigned int* out0);
 
