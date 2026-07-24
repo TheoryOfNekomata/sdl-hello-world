@@ -4,6 +4,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include "G00_list.h"
+
 struct G00_App;
 
 struct G00_VideoConfig {
@@ -22,12 +24,31 @@ enum G00_VideoLoadedObjectType : unsigned char {
 	G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE,
 };
 
+enum G00_VideoProcessingNodeType : unsigned char {
+	G00_VIDEO_PROCESSING_NODE_TYPE_NOOP,
+	G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
+};
+
+struct G00_VideoNoopProcessingNode {
+	enum G00_VideoProcessingNodeType type;
+};
+
+struct G00_VideoFillColorProcessingNode {
+	enum G00_VideoProcessingNodeType type;
+	SDL_Color color;
+};
+
+union G00_VideoProcessingNode {
+	struct G00_VideoNoopProcessingNode noop;
+	struct G00_VideoFillColorProcessingNode fill_color;
+};
+
 struct G00_VideoSprite {
 	enum G00_VideoLoadedObjectType type;
 	unsigned int orig_surface_index;
 	unsigned int processed_surface_index;
 	SDL_FRect rect;
-	SDL_Color fill_color;
+	struct G00_ListNode* processing_nodes;
 };
 
 struct G00_Video {

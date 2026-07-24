@@ -1,10 +1,7 @@
 #ifndef G00_UI_H
 #define G00_UI_H
 
-struct G00_ListNode {
-	void* data;
-	struct G00_ListNode* next;
-};
+#include "G00_list.h"
 
 struct G00_MessageEntry {
 	char key[255];
@@ -60,7 +57,5 @@ struct G00_UIState {
 };
 
 int G00_UIInit(struct G00_UIState*);
-
-int G00_ListAppend(struct G00_ListNode**, size_t, void*, struct G00_ListNode** out0);
 
 #endif

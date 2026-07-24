@@ -197,16 +197,40 @@ int G00_AppUpdate(struct G00_App* app) {
 	}
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow0_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].fill_color = (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0x00, .a = 0xFF };
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].processing_nodes = &(struct G00_ListNode) {
+		.data = &(struct G00_VideoFillColorProcessingNode) {
+			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
+			.color = (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0x00, .a = 0xFF },
+		},
+		.next = NULL,
+	};
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow1_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].fill_color = (SDL_Color) { .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 0xFF };
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].processing_nodes = &(struct G00_ListNode) {
+		.data = &(struct G00_VideoFillColorProcessingNode) {
+			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
+			.color = (SDL_Color) { .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 0xFF },
+		},
+		.next = NULL,
+	};
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow2_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].fill_color = (SDL_Color) { .r = 0x00, .g = 0xFF, .b = 0xFF, .a = 0xFF };
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].processing_nodes = &(struct G00_ListNode) {
+		.data = &(struct G00_VideoFillColorProcessingNode) {
+			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
+			.color = (SDL_Color) { .r = 0x00, .g = 0xFF, .b = 0xFF, .a = 0xFF },
+		},
+		.next = NULL,
+	};
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow3_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].fill_color = (SDL_Color) { .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF };
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].processing_nodes = &(struct G00_ListNode) {
+		.data = &(struct G00_VideoFillColorProcessingNode) {
+			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
+			.color = (SDL_Color) { .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF },
+		},
+		.next = NULL,
+	};
 
 	const float half_screen_x = app->video.config.screen_width / 2.f;
 	const float half_screen_y = app->video.config.screen_height / 2.f;

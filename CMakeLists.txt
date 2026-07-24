@@ -7,7 +7,9 @@ file(GLOB sources src/*.h src/*.c src/commands/*.c)
 
 file(GLOB sources_7z thirdparty/lzma2409/include/lzma/*.h thirdparty/lzma2409/include/lzma/*.c)
 
-add_executable(${PROJECT_NAME} thirdparty/sqlite/include/sqlite/sqlite3.c ${sources_7z} thirdparty/dirent/include/dirent/dirent.h ${sources})
+add_executable(${PROJECT_NAME} thirdparty/sqlite/include/sqlite/sqlite3.c ${sources_7z} thirdparty/dirent/include/dirent/dirent.h ${sources}
+        src/G00_list.c
+        src/G00_list.h)
 
 target_include_directories(
     ${PROJECT_NAME} PRIVATE
