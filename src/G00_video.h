@@ -24,7 +24,8 @@ enum G00_VideoLoadedObjectType : unsigned char {
 
 struct G00_VideoSprite {
 	enum G00_VideoLoadedObjectType type;
-	unsigned int surface_index;
+	unsigned int orig_surface_index;
+	unsigned int processed_surface_index;
 	SDL_FRect rect;
 	SDL_Color fill_color;
 };
@@ -60,7 +61,7 @@ int G00_VideoUpdateWindow(struct G00_Video*);
 
 int G00_VideoLoadImageSprite(struct G00_Video*, size_t, void*, unsigned int* out0);
 
-int G00_VideoGenerateSurfaceSprite(struct G00_Video*, SDL_Surface*, SDL_Color, unsigned int* out0);
+int G00_VideoDuplicateSprite(struct G00_Video*, unsigned int, unsigned int* out0);
 
 int G00_VideoGenerateTextSprite(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
 
