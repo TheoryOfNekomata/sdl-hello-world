@@ -72,8 +72,8 @@ int G00_XCommandVideoMaxLoadedSurfaces(char args[255], struct G00_CommandArgumen
 		return 0;
 	}
 
-	if (!(16u <= video_state->config.max_loaded_surfaces && video_state->config.max_loaded_surfaces <= 255u)) {
-		video_state->config.max_loaded_surfaces = 16u;
+	if (!(64u <= video_state->config.max_loaded_surfaces && video_state->config.max_loaded_surfaces <= 255u)) {
+		video_state->config.max_loaded_surfaces = 64u;
 		// TODO update array
 		return 1;
 	}
@@ -93,8 +93,8 @@ int G00_XCommandVideoMaxLoadedSprites(char args[255], struct G00_CommandArgument
 		return 0;
 	}
 
-	if (!(16u <= video_state->config.max_loaded_sprites && video_state->config.max_loaded_sprites <= 255u)) {
-		video_state->config.max_loaded_sprites = 16u;
+	if (!(128u <= video_state->config.max_loaded_sprites && video_state->config.max_loaded_sprites <= 512u)) {
+		video_state->config.max_loaded_sprites = 128u;
 		// TODO update array
 		return 1;
 	}
