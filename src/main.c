@@ -59,6 +59,18 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 	G00_ConfigExecuteScript("default.menu.cfg", app);
 	app->ui.current_menu = app->ui.menus->data;
 	app->ui.current_item = app->ui.current_menu->children->data;
+
+	app->game_state.menu_bg_asset_index = 0;
+	app->game_state.menu_fg_asset_index = 0;
+	app->game_state.primary_font_asset_index = 0;
+	app->game_state.primary_font_index = 0;
+	app->game_state.menu_bg_sprite_index = 0;
+	app->game_state.menu_fg_sprite_index = 0;
+	app->game_state.menu_fg_shadow0_sprite_index = 0;
+	app->game_state.menu_fg_shadow1_sprite_index = 0;
+	app->game_state.menu_fg_shadow2_sprite_index = 0;
+	app->game_state.menu_fg_shadow3_sprite_index = 0;
+
 	return G00_APP_INIT_RESULT_OK;
 }
 
@@ -195,8 +207,6 @@ int G00_AppUpdate(struct G00_App* app) {
 
 	float base_fg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index]->w / 2.f);
 	float base_fg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].surface_index]->h / 2.f);
-
-	printf("%f %f\n", base_fg_x, base_fg_y);
 
 	app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect = (SDL_FRect) {
 		.x = base_fg_x,
