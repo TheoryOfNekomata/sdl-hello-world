@@ -26,11 +26,11 @@ enum G00_VideoSpriteType : unsigned char {
 };
 
 enum G00_VideoProcessingNodeType : unsigned char {
-	G00_VIDEO_PROCESSING_NODE_TYPE_NOOP,
+	G00_VIDEO_PROCESSING_NODE_TYPE_BASE,
 	G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
 };
 
-struct G00_VideoNoopProcessingNode {
+struct G00_VideoBaseProcessingNode {
 	enum G00_VideoProcessingNodeType type;
 };
 
@@ -40,7 +40,7 @@ struct G00_VideoFillColorProcessingNode {
 };
 
 union G00_VideoProcessingNode {
-	struct G00_VideoNoopProcessingNode noop;
+	struct G00_VideoBaseProcessingNode base;
 	struct G00_VideoFillColorProcessingNode fill_color;
 };
 

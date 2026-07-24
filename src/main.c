@@ -188,6 +188,8 @@ int G00_AppUpdate(struct G00_App* app) {
 		fprintf(stdout, "Warning: Font loaded abnormally.\n");
 	}
 
+	G00_AppSetupMenu(app);
+
 	if (G00_MemoryRetrieveIndex(&app->memory, "menu-fg-parallax.png", &app->game_state.menu_fg_asset_index) < 0) {
 		fprintf(stderr, "Unable to retrieve image!\n");
 		return -1;
@@ -369,8 +371,7 @@ int G00_AppUpdate(struct G00_App* app) {
 		}
 
 		app->ticks = SDL_GetTicks();
-
-		//G00_AppSetupMenu(app);
+		G00_AppSetupMenu(app);
 		G00_VideoUpdate(&app->video, app->ticks);
 		// TODO: menu rendering happens once, pls fix
 		// int render_menu_result = G00_AppRenderMenu(app, app->game_state.primary_font_index);

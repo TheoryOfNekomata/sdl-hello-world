@@ -77,57 +77,119 @@ void G00_VideoUpdate(struct G00_Video* video, unsigned long app_ticks) {
 	SDL_RenderClear(video->renderer);
 	for (unsigned int i = video->config.max_loaded_sprites; i > 0; i -= 1) {
 	// for (unsigned int i = 1; i <= video->config.max_loaded_sprites - 1; i += 1) {
-		if (video->loaded_sprites[i].base.type == G00_VIDEO_SPRITE_TYPE_IMAGE) {
-			SDL_Surface* orig_surface = video->loaded_surfaces[video->loaded_sprites[i].image.orig_surface_index];
-			SDL_Surface* final_surface = orig_surface;
+		switch (video->loaded_sprites[i].base.type) {
+			case G00_VIDEO_SPRITE_TYPE_IMAGE: {
+				SDL_Surface* orig_surface = video->loaded_surfaces[video->loaded_sprites[i].image.orig_surface_index];
+				SDL_Surface* final_surface = orig_surface;
 
-			bool has_processing = video->loaded_sprites[i].image.processing_nodes != NULL;
-			if (has_processing) {
-				bool is_processed_surface_cached = video->loaded_sprites[i].image.processed_surface_index != video->loaded_sprites[i].image.orig_surface_index;
+				bool has_processing = video->loaded_sprites[i].image.processing_nodes != NULL;
+				if (has_processing) {
+					bool is_processed_surface_cached = video->loaded_sprites[i].image.processed_surface_index != video->loaded_sprites[i].image.orig_surface_index;
 
-				if (!is_processed_surface_cached) {
-					do {
-						video->loaded_sprites[i].image.processed_surface_index += 1;
-					} while (
-						video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index] != NULL
-						&& video->loaded_sprites[i].image.processed_surface_index <= video->config.max_loaded_surfaces
-					);
-
-					if (video->loaded_sprites[i].image.processed_surface_index > video->config.max_loaded_surfaces) {
-						video->loaded_sprites[i].image.processed_surface_index = video->loaded_sprites[i].image.orig_surface_index;
-					}
-
-					video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index] = SDL_DuplicateSurface(orig_surface);
-					struct G00_ListNode* processing_node = video->loaded_sprites[i].image.processing_nodes;
-					if (processing_node != NULL) {
+					if (!is_processed_surface_cached) {
 						do {
-							switch (((union G00_VideoProcessingNode*) processing_node->data)->noop.type) {
-								case G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR:
-									G00_VideoSurfaceSetNonAlphaPixelColor(
-										video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index],
-										((union G00_VideoProcessingNode*) processing_node->data)->fill_color.color
-									);
-									break;
-								default:
-									break;
-							}
-							processing_node = processing_node->next;
-						} while (processing_node != NULL);
+							video->loaded_sprites[i].image.processed_surface_index += 1;
+						} while (
+							video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index] != NULL
+							&& video->loaded_sprites[i].image.processed_surface_index <= video->config.max_loaded_surfaces
+						);
+
+						if (video->loaded_sprites[i].image.processed_surface_index > video->config.max_loaded_surfaces) {
+							video->loaded_sprites[i].image.processed_surface_index = video->loaded_sprites[i].image.orig_surface_index;
+						}
+
+						video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index] = SDL_DuplicateSurface(orig_surface);
+						struct G00_ListNode* processing_node = video->loaded_sprites[i].image.processing_nodes;
+						if (processing_node != NULL) {
+							do {
+								switch (((union G00_VideoProcessingNode*) processing_node->data)->base.type) {
+									case G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR:
+										G00_VideoSurfaceSetNonAlphaPixelColor(
+											video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index],
+											((union G00_VideoProcessingNode*) processing_node->data)->fill_color.color
+										);
+										break;
+									default:
+										break;
+								}
+								processing_node = processing_node->next;
+							} while (processing_node != NULL);
+						}
 					}
+					final_surface = video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index];
 				}
-				final_surface = video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index];
+
+				SDL_Texture* texture = SDL_CreateTextureFromSurface(video->renderer, final_surface);
+				if (texture != NULL) {
+					SDL_RenderTexture(
+						video->renderer,
+						texture,
+						NULL,
+						&video->loaded_sprites[i].image.rect
+					);
+					SDL_DestroyTexture(texture);
+				}
+
+				break;
 			}
 
-			SDL_Texture* texture = SDL_CreateTextureFromSurface(video->renderer, final_surface);
-			if (texture != NULL) {
-				SDL_RenderTexture(
-					video->renderer,
-					texture,
-					NULL,
-					&video->loaded_sprites[i].image.rect
-				);
-				SDL_DestroyTexture(texture);
+			case G00_VIDEO_SPRITE_TYPE_TEXT: {
+					SDL_Surface* orig_surface = video->loaded_surfaces[video->loaded_sprites[i].text.orig_surface_index];
+				SDL_Surface* final_surface = orig_surface;
+
+				bool has_processing = video->loaded_sprites[i].text.processing_nodes != NULL;
+				if (has_processing) {
+					bool is_processed_surface_cached = video->loaded_sprites[i].text.processed_surface_index != video->loaded_sprites[i].text.orig_surface_index;
+
+					if (!is_processed_surface_cached) {
+						do {
+							video->loaded_sprites[i].text.processed_surface_index += 1;
+						} while (
+							video->loaded_surfaces[video->loaded_sprites[i].text.processed_surface_index] != NULL
+							&& video->loaded_sprites[i].text.processed_surface_index <= video->config.max_loaded_surfaces
+						);
+
+						if (video->loaded_sprites[i].text.processed_surface_index > video->config.max_loaded_surfaces) {
+							video->loaded_sprites[i].text.processed_surface_index = video->loaded_sprites[i].text.orig_surface_index;
+						}
+
+						video->loaded_surfaces[video->loaded_sprites[i].text.processed_surface_index] = SDL_DuplicateSurface(orig_surface);
+						struct G00_ListNode* processing_node = video->loaded_sprites[i].text.processing_nodes;
+						if (processing_node != NULL) {
+							do {
+								switch (((union G00_VideoProcessingNode*) processing_node->data)->base.type) {
+									case G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR:
+										G00_VideoSurfaceSetNonAlphaPixelColor(
+											video->loaded_surfaces[video->loaded_sprites[i].text.processed_surface_index],
+											((union G00_VideoProcessingNode*) processing_node->data)->fill_color.color
+										);
+										break;
+									default:
+										break;
+								}
+								processing_node = processing_node->next;
+							} while (processing_node != NULL);
+						}
+					}
+					final_surface = video->loaded_surfaces[video->loaded_sprites[i].text.processed_surface_index];
+				}
+
+				SDL_Texture* texture = SDL_CreateTextureFromSurface(video->renderer, final_surface);
+				if (texture != NULL) {
+					SDL_RenderTexture(
+						video->renderer,
+						texture,
+						NULL,
+						&video->loaded_sprites[i].text.rect
+					);
+					SDL_DestroyTexture(texture);
+				}
+
+				break;
 			}
+
+			default:
+				break;
 		}
 	}
 
@@ -271,6 +333,16 @@ void G00_VideoUnloadObject(struct G00_Video* video, unsigned int index) {
 // }
 
 int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, void* cache_key, unsigned int* out0_sprite_index) {
+	for (unsigned int k = 1; k <= video->config.max_loaded_surfaces; k += 1) {
+		if (video->loaded_surfaces[k] == NULL) {
+			continue;
+		}
+		if (video->loaded_sprites[k].text.text == cache_key) {
+			*out0_sprite_index = k;
+			return 0;
+		}
+	}
+
 	for (unsigned int i = 1; i <= video->config.max_loaded_surfaces; i += 1) {
 		if (video->loaded_surfaces[i] != NULL) {
 			continue;
