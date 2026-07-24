@@ -8,39 +8,37 @@ struct G00_MessageEntry {
 	char fallback_value[255];
 };
 
-enum G00_UINodeType : unsigned char {
-	G00_UI_NODE_TYPE_NODE,
-	G00_UI_NODE_TYPE_MENU,
-	G00_UI_NODE_TYPE_LABEL,
-	G00_UI_NODE_TYPE_ITEM,
+enum G00_UIMenuChildNodeType : unsigned char {
+	G00_UI_MENU_CHILD_NODE_TYPE_BASE,
+	G00_UI_MENU_CHILD_NODE_TYPE_LABEL,
+	G00_UI_MENU_CHILD_NODE_TYPE_ITEM,
 };
 
-struct G00_UILabelNode {
-	enum G00_UINodeType type;
+struct G00_UIMenuChildBaseNode {
+	enum G00_UIMenuChildNodeType type;
+};
+
+struct G00_UIMenuChildLabelNode {
+	enum G00_UIMenuChildNodeType type;
 	unsigned int sprite_index;
 	char title[255];
 };
 
-struct G00_UIItemNode {
-	enum G00_UINodeType type;
+struct G00_UIMenuChildItemNode {
+	enum G00_UIMenuChildNodeType type;
 	unsigned int sprite_index;
 	char title[255];
 	char script_commands[255];
 	char description_text[255];
 };
 
-struct G00_UINode {
-	enum G00_UINodeType type;
-};
-
 union G00_UIMenuChildNode {
-	struct G00_UINode node;
-	struct G00_UILabelNode label;
-	struct G00_UIItemNode item;
+	struct G00_UIMenuChildBaseNode base;
+	struct G00_UIMenuChildLabelNode label;
+	struct G00_UIMenuChildItemNode item;
 };
 
-struct G00_UIMenuNode {
-	enum G00_UINodeType type;
+struct G00_UIMenuParentNode {
 	char label[255];
 	struct G00_ListNode* children;
 };
@@ -48,12 +46,12 @@ struct G00_UIMenuNode {
 struct G00_UIState {
 	struct G00_ListNode* menus;
 
-	struct G00_UIMenuNode* current_menu;
+	struct G00_UIMenuParentNode* current_menu;
 	union G00_UIMenuChildNode* current_item;
 
 	struct G00_ListNode* messages;
 	unsigned char history_stack_index;
-	struct G00_UIMenuNode* history_stack[32];
+	struct G00_UIMenuParentNode* history_stack[32];
 };
 
 int G00_UIInit(struct G00_UIState*);

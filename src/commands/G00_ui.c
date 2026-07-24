@@ -16,8 +16,7 @@ int G00_XCommandUIMsgKey(char args[255], struct G00_CommandArgumentDefinition ar
 }
 
 int G00_XCommandUIMenu(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_UIState* ui) {
-	struct G00_UIMenuNode new_node = {
-		.type = G00_UI_NODE_TYPE_MENU,
+	struct G00_UIMenuParentNode new_node = {
 		.children = NULL,
 	};
 
@@ -26,8 +25,8 @@ int G00_XCommandUIMenu(char args[255], struct G00_CommandArgumentDefinition arg_
 	}
 
 	struct G00_ListNode* added_entry;
-	G00_ListAppend(&ui->menus, sizeof(struct G00_UIMenuNode), &new_node, &added_entry);
-	struct G00_UIMenuNode* added_entry_data = added_entry->data;
+	G00_ListAppend(&ui->menus, sizeof(struct G00_UIMenuParentNode), &new_node, &added_entry);
+	struct G00_UIMenuParentNode* added_entry_data = added_entry->data;
 	fprintf(stdout, "Registered menu %s\n", added_entry_data->label);
 	ui->current_menu = added_entry_data;
 	return 0;
@@ -40,7 +39,7 @@ int G00_XCommandUIItem(char args[255], struct G00_CommandArgumentDefinition arg_
 
 	union G00_UIMenuChildNode new_item = {
 		.item = {
-			.type = G00_UI_NODE_TYPE_ITEM,
+			.type = G00_UI_MENU_CHILD_NODE_TYPE_ITEM,
 		}
 	};
 
@@ -83,7 +82,7 @@ int G00_XCommandUILabel(char args[255], struct G00_CommandArgumentDefinition arg
 
 	union G00_UIMenuChildNode new_item = {
 		.label = {
-			.type = G00_UI_NODE_TYPE_LABEL,
+			.type = G00_UI_MENU_CHILD_NODE_TYPE_LABEL,
 		},
 	};
 
@@ -112,7 +111,7 @@ int G00_XCommandUIMenuPush(char args[255], struct G00_CommandArgumentDefinition 
 
 	struct G00_ListNode** p = &ui->menus;
 	while (*p != NULL) {
-		struct G00_UIMenuNode* data = (*p)->data;
+		struct G00_UIMenuParentNode* data = (*p)->data;
 		if (!strcmp(data->label, menu_id)) {
 			ui->history_stack[ui->history_stack_index] = data;
 			fprintf(stdout, "Pushed history item %s\n", ui->history_stack[ui->history_stack_index]->label);

@@ -74,13 +74,13 @@ enum G00_AppInitResult G00_AppInit(struct G00_App* app, int argc, char* argv[]) 
 	return G00_APP_INIT_RESULT_OK;
 }
 
-int G00_AppRenderMenu(struct G00_App* app, unsigned int font_index) {
+int G00_AppSetupMenu(struct G00_App* app) {
 	if (app->ui.history_stack_index == 0) {
 		// no menu + assets to load, stack is empty
 		return 0;
 	}
 
-	struct G00_UIMenuNode* displayed_menu = app->ui.history_stack[app->ui.history_stack_index - 1];
+	struct G00_UIMenuParentNode* displayed_menu = app->ui.history_stack[app->ui.history_stack_index - 1];
 
 	// This displays the label of the current menu
 	//
@@ -109,8 +109,8 @@ int G00_AppRenderMenu(struct G00_App* app, unsigned int font_index) {
 		union G00_UIMenuChildNode* node_data = child->data;
 		struct G00_ListNode* message_entry = app->ui.messages;
 		struct G00_MessageEntry* node_message = NULL;
-		switch (node_data->node.type) {
-			case G00_UI_NODE_TYPE_ITEM:
+		switch (node_data->base.type) {
+			case G00_UI_MENU_CHILD_NODE_TYPE_ITEM:
 				while (message_entry != NULL) {
 					if (
 						message_entry->data != NULL &&
@@ -122,35 +122,45 @@ int G00_AppRenderMenu(struct G00_App* app, unsigned int font_index) {
 					message_entry = message_entry->next;
 				}
 
-				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, node_message != NULL ? node_message->fallback_value : node_data->item.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF }, &node_data->item.sprite_index);
+				text_sprite_load_result = G00_VideoGenerateTextSprite(
+					&app->video,
+					app->game_state.primary_font_index,
+					node_message != NULL
+						? node_message->fallback_value
+						: node_data->item.title,
+					13,
+					(SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF },
+					&node_data,
+					&node_data->item.sprite_index
+				);
 				if (text_sprite_load_result < 0) {
 					fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 					return -1;
 				} if (text_sprite_load_result > 0) {
 					fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 				}
-				app->video.loaded_sprites[node_data->item.sprite_index].rect = (SDL_FRect) {
+				app->video.loaded_sprites[node_data->item.sprite_index].text.rect = (SDL_FRect) {
 					.x = 100,
 					//.y = app->video.config.screen_height - ,
-					.y = 300 + menu_y * (app->video.loaded_surfaces[app->video.loaded_sprites[node_data->item.sprite_index].processed_surface_index]->h * 1.5f),
-					.w = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->item.sprite_index].processed_surface_index]->w,
-					.h = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->item.sprite_index].processed_surface_index]->h,
+					.y = 300 + menu_y * (app->video.loaded_surfaces[app->video.loaded_sprites[node_data->item.sprite_index].text.processed_surface_index]->h * 1.5f),
+					.w = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->item.sprite_index].text.processed_surface_index]->w,
+					.h = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->item.sprite_index].text.processed_surface_index]->h,
 				};
 				break;
-			case G00_UI_NODE_TYPE_LABEL:
-				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, font_index, node_data->label.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &node_data->label.sprite_index);
+			case G00_UI_MENU_CHILD_NODE_TYPE_LABEL:
+				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, app->game_state.primary_font_index, node_data->label.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &node_data, &node_data->label.sprite_index);
 				if (text_sprite_load_result < 0) {
 					fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 					return -1;
 				} if (text_sprite_load_result > 0) {
 					fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 				}
-				app->video.loaded_sprites[node_data->label.sprite_index].rect = (SDL_FRect) {
+				app->video.loaded_sprites[node_data->label.sprite_index].text.rect = (SDL_FRect) {
 					.x = 100,
 					//.y = app->video.config.screen_height - app->video.loaded_surfaces[app->video.loaded_sprites[text_sprite_index].surface_index]->h,
-					.y = 300 + menu_y * (app->video.loaded_surfaces[app->video.loaded_sprites[node_data->label.sprite_index].processed_surface_index]->h * 1.5f),
-					.w = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->label.sprite_index].processed_surface_index]->w,
-					.h = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->label.sprite_index].processed_surface_index]->h,
+					.y = 300 + menu_y * (app->video.loaded_surfaces[app->video.loaded_sprites[node_data->label.sprite_index].text.processed_surface_index]->h * 1.5f),
+					.w = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->label.sprite_index].text.processed_surface_index]->w,
+					.h = app->video.loaded_surfaces[app->video.loaded_sprites[node_data->label.sprite_index].text.processed_surface_index]->h,
 				};
 				break;
 			default:
@@ -197,7 +207,7 @@ int G00_AppUpdate(struct G00_App* app) {
 	}
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow0_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].processing_nodes = &(struct G00_ListNode) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].image.processing_nodes = &(struct G00_ListNode) {
 		.data = &(struct G00_VideoFillColorProcessingNode) {
 			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
 			.color = (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0x00, .a = 0xFF },
@@ -206,7 +216,7 @@ int G00_AppUpdate(struct G00_App* app) {
 	};
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow1_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].processing_nodes = &(struct G00_ListNode) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].image.processing_nodes = &(struct G00_ListNode) {
 		.data = &(struct G00_VideoFillColorProcessingNode) {
 			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
 			.color = (SDL_Color) { .r = 0xFF, .g = 0x00, .b = 0xFF, .a = 0xFF },
@@ -215,7 +225,7 @@ int G00_AppUpdate(struct G00_App* app) {
 	};
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow2_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].processing_nodes = &(struct G00_ListNode) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].image.processing_nodes = &(struct G00_ListNode) {
 		.data = &(struct G00_VideoFillColorProcessingNode) {
 			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
 			.color = (SDL_Color) { .r = 0x00, .g = 0xFF, .b = 0xFF, .a = 0xFF },
@@ -224,7 +234,7 @@ int G00_AppUpdate(struct G00_App* app) {
 	};
 
 	G00_VideoDuplicateSprite(&app->video, app->game_state.menu_fg_sprite_index, &app->game_state.menu_fg_shadow3_sprite_index);
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].processing_nodes = &(struct G00_ListNode) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].image.processing_nodes = &(struct G00_ListNode) {
 		.data = &(struct G00_VideoFillColorProcessingNode) {
 			.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
 			.color = (SDL_Color) { .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF },
@@ -235,42 +245,42 @@ int G00_AppUpdate(struct G00_App* app) {
 	const float half_screen_x = app->video.config.screen_width / 2.f;
 	const float half_screen_y = app->video.config.screen_height / 2.f;
 
-	float base_fg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].processed_surface_index]->w / 2.f);
-	float base_fg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].processed_surface_index]->h / 2.f);
+	float base_fg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.processed_surface_index]->w / 2.f);
+	float base_fg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.processed_surface_index]->h / 2.f);
 
-	app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect = (SDL_FRect) {
+	app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.rect = (SDL_FRect) {
 		.x = base_fg_x,
 		.y = base_fg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].processed_surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].processed_surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.processed_surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.processed_surface_index]->h,
 	};
 
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].rect = (SDL_FRect) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].image.rect = (SDL_FRect) {
 		.x = base_fg_x,
 		.y = base_fg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].processed_surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].processed_surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].image.processed_surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].image.processed_surface_index]->h,
 	};
 
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].rect = (SDL_FRect) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].image.rect = (SDL_FRect) {
 		.x = base_fg_x,
 		.y = base_fg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].processed_surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].processed_surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].image.processed_surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].image.processed_surface_index]->h,
 	};
 
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].rect = (SDL_FRect) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].image.rect = (SDL_FRect) {
 		.x = base_fg_x,
 		.y = base_fg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].processed_surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].processed_surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].image.processed_surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].image.processed_surface_index]->h,
 	};
 
-	app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].rect = (SDL_FRect) {
+	app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].image.rect = (SDL_FRect) {
 		.x = base_fg_x,
 		.y = base_fg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].processed_surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].processed_surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].image.processed_surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].image.processed_surface_index]->h,
 	};
 
 	if (G00_MemoryRetrieveIndex(&app->memory, "menu-bg-parallax.png", &app->game_state.menu_bg_asset_index) < 0) {
@@ -291,14 +301,14 @@ int G00_AppUpdate(struct G00_App* app) {
 		fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 	}
 
-	float base_bg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].processed_surface_index]->w / 2.f);
-	float base_bg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].processed_surface_index]->h / 2.f);
+	float base_bg_x = half_screen_x - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.processed_surface_index]->w / 2.f);
+	float base_bg_y = half_screen_y - (app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.processed_surface_index]->h / 2.f);
 
-	app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].rect = (SDL_FRect) {
+	app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.rect = (SDL_FRect) {
 		.x = base_bg_x,
 		.y = base_bg_y,
-		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].processed_surface_index]->w,
-		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].processed_surface_index]->h,
+		.w = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.processed_surface_index]->w,
+		.h = app->video.loaded_surfaces[app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.processed_surface_index]->h,
 	};
 
 	SDL_Event e;
@@ -315,10 +325,10 @@ int G00_AppUpdate(struct G00_App* app) {
 					while (child != NULL) {
 						if (child->next != NULL && child->next->data == app->ui.current_item) {
 							app->ui.current_item = child->data;
-							app->video.loaded_sprites[((union G00_UIMenuChildNode*) child->data)->item.sprite_index].rect.x = 99999;
+							app->video.loaded_sprites[((union G00_UIMenuChildNode*) child->data)->item.sprite_index].image.rect.x = 99999;
 							continue;
 						}
-						app->video.loaded_sprites[((union G00_UIMenuChildNode*) child->data)->item.sprite_index].rect.x = 100;
+						app->video.loaded_sprites[((union G00_UIMenuChildNode*) child->data)->item.sprite_index].image.rect.x = 100;
 						child = child->next;
 					}
 				} else if (e.key.key == SDLK_DOWN) {
@@ -338,28 +348,29 @@ int G00_AppUpdate(struct G00_App* app) {
 			}
 
 			if (e.type == SDL_EVENT_MOUSE_MOTION) {
-				app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].rect.x = base_bg_x + ((e.motion.x - half_screen_x) / half_screen_x * -parallax_offset);
-				app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].rect.y = base_bg_y + ((e.motion.y - half_screen_y) / half_screen_y * -parallax_offset);
+				app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.rect.x = base_bg_x + ((e.motion.x - half_screen_x) / half_screen_x * -parallax_offset);
+				app->video.loaded_sprites[app->game_state.menu_bg_sprite_index].image.rect.y = base_bg_y + ((e.motion.y - half_screen_y) / half_screen_y * -parallax_offset);
 
-				app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect.x = base_fg_x + ((e.motion.x - half_screen_x) / half_screen_x * parallax_offset);
-				app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].rect.y = base_fg_y + ((e.motion.y - half_screen_y) / half_screen_y * parallax_offset);
+				app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.rect.x = base_fg_x + ((e.motion.x - half_screen_x) / half_screen_x * parallax_offset);
+				app->video.loaded_sprites[app->game_state.menu_fg_sprite_index].image.rect.y = base_fg_y + ((e.motion.y - half_screen_y) / half_screen_y * parallax_offset);
 
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].image.rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow0_sprite_index].image.rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
 
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].rect.x = base_fg_x - 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 64.f));
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].rect.y = base_fg_y - 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 32.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].image.rect.x = base_fg_x - 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 64.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow1_sprite_index].image.rect.y = base_fg_y - 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 32.f));
 
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].rect.y = base_fg_y - 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 32.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].image.rect.x = base_fg_x + 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 32.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow2_sprite_index].image.rect.y = base_fg_y - 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 32.f));
 
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].rect.x = base_fg_x - 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 64.f));
-				app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].image.rect.x = base_fg_x - 32.f + ((e.motion.x - half_screen_x) / half_screen_x * (parallax_offset + 64.f));
+				app->video.loaded_sprites[app->game_state.menu_fg_shadow3_sprite_index].image.rect.y = base_fg_y + 32.f + ((e.motion.y - half_screen_y) / half_screen_y * (parallax_offset + 64.f));
 			}
 		}
 
 		app->ticks = SDL_GetTicks();
 
+		//G00_AppSetupMenu(app);
 		G00_VideoUpdate(&app->video, app->ticks);
 		// TODO: menu rendering happens once, pls fix
 		// int render_menu_result = G00_AppRenderMenu(app, app->game_state.primary_font_index);

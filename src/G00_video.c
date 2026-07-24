@@ -27,7 +27,7 @@ enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video) {
 	size_t loaded_surfaces_len = sizeof(SDL_Surface*) * (video->config.max_loaded_surfaces + 1);
 	video->loaded_surfaces = malloc(loaded_surfaces_len);
 	memset(video->loaded_surfaces, 0, loaded_surfaces_len);
-	size_t loaded_sprites_len = sizeof(struct G00_VideoSprite) * (video->config.max_loaded_sprites + 1);
+	size_t loaded_sprites_len = sizeof(struct G00_VideoImageSprite) * (video->config.max_loaded_sprites + 1);
 	video->loaded_sprites = malloc(loaded_sprites_len);
 	memset(video->loaded_sprites, 0, loaded_sprites_len);
 
@@ -77,34 +77,34 @@ void G00_VideoUpdate(struct G00_Video* video, unsigned long app_ticks) {
 	SDL_RenderClear(video->renderer);
 	for (unsigned int i = video->config.max_loaded_sprites; i > 0; i -= 1) {
 	// for (unsigned int i = 1; i <= video->config.max_loaded_sprites - 1; i += 1) {
-		if (video->loaded_sprites[i].type == G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE) {
-			SDL_Surface* orig_surface = video->loaded_surfaces[video->loaded_sprites[i].orig_surface_index];
+		if (video->loaded_sprites[i].base.type == G00_VIDEO_SPRITE_TYPE_IMAGE) {
+			SDL_Surface* orig_surface = video->loaded_surfaces[video->loaded_sprites[i].image.orig_surface_index];
 			SDL_Surface* final_surface = orig_surface;
 
-			bool has_processing = video->loaded_sprites[i].processing_nodes != NULL;
+			bool has_processing = video->loaded_sprites[i].image.processing_nodes != NULL;
 			if (has_processing) {
-				bool is_processed_surface_cached = video->loaded_sprites[i].processed_surface_index != video->loaded_sprites[i].orig_surface_index;
+				bool is_processed_surface_cached = video->loaded_sprites[i].image.processed_surface_index != video->loaded_sprites[i].image.orig_surface_index;
 
 				if (!is_processed_surface_cached) {
 					do {
-						video->loaded_sprites[i].processed_surface_index += 1;
+						video->loaded_sprites[i].image.processed_surface_index += 1;
 					} while (
-						video->loaded_surfaces[video->loaded_sprites[i].processed_surface_index] != NULL
-						&& video->loaded_sprites[i].processed_surface_index <= video->config.max_loaded_surfaces
+						video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index] != NULL
+						&& video->loaded_sprites[i].image.processed_surface_index <= video->config.max_loaded_surfaces
 					);
 
-					if (video->loaded_sprites[i].processed_surface_index > video->config.max_loaded_surfaces) {
-						video->loaded_sprites[i].processed_surface_index = video->loaded_sprites[i].orig_surface_index;
+					if (video->loaded_sprites[i].image.processed_surface_index > video->config.max_loaded_surfaces) {
+						video->loaded_sprites[i].image.processed_surface_index = video->loaded_sprites[i].image.orig_surface_index;
 					}
 
-					video->loaded_surfaces[video->loaded_sprites[i].processed_surface_index] = SDL_DuplicateSurface(orig_surface);
-					struct G00_ListNode* processing_node = video->loaded_sprites[i].processing_nodes;
+					video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index] = SDL_DuplicateSurface(orig_surface);
+					struct G00_ListNode* processing_node = video->loaded_sprites[i].image.processing_nodes;
 					if (processing_node != NULL) {
 						do {
 							switch (((union G00_VideoProcessingNode*) processing_node->data)->noop.type) {
 								case G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR:
 									G00_VideoSurfaceSetNonAlphaPixelColor(
-										video->loaded_surfaces[video->loaded_sprites[i].processed_surface_index],
+										video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index],
 										((union G00_VideoProcessingNode*) processing_node->data)->fill_color.color
 									);
 									break;
@@ -115,7 +115,7 @@ void G00_VideoUpdate(struct G00_Video* video, unsigned long app_ticks) {
 						} while (processing_node != NULL);
 					}
 				}
-				final_surface = video->loaded_surfaces[video->loaded_sprites[i].processed_surface_index];
+				final_surface = video->loaded_surfaces[video->loaded_sprites[i].image.processed_surface_index];
 			}
 
 			SDL_Texture* texture = SDL_CreateTextureFromSurface(video->renderer, final_surface);
@@ -124,7 +124,7 @@ void G00_VideoUpdate(struct G00_Video* video, unsigned long app_ticks) {
 					video->renderer,
 					texture,
 					NULL,
-					&video->loaded_sprites[i].rect
+					&video->loaded_sprites[i].image.rect
 				);
 				SDL_DestroyTexture(texture);
 			}
@@ -162,14 +162,14 @@ int G00_VideoLoadImageSprite(struct G00_Video* video, size_t len, void* mem, uns
 
 		video->loaded_surfaces[i] = image;
 		for (unsigned int j = 1; j <= video->config.max_loaded_sprites; j += 1) {
-			if (video->loaded_sprites[j].type != G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN) {
+			if (video->loaded_sprites[j].base.type != G00_VIDEO_SPRITE_TYPE_BASE) {
 				continue;
 			}
 
-			video->loaded_sprites[j].type = G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE;
-			video->loaded_sprites[j].orig_surface_index = i;
-			video->loaded_sprites[j].processed_surface_index = i;
-			video->loaded_sprites[j].processing_nodes = NULL;
+			video->loaded_sprites[j].image.type = G00_VIDEO_SPRITE_TYPE_IMAGE;
+			video->loaded_sprites[j].image.orig_surface_index = i;
+			video->loaded_sprites[j].image.processed_surface_index = i;
+			video->loaded_sprites[j].image.processing_nodes = NULL;
 			*out0_index = j;
 			return 0;
 		}
@@ -182,51 +182,61 @@ int G00_VideoDuplicateSprite(struct G00_Video* video, unsigned int src_index, un
 	unsigned int new_sprite_index = 0;
 	do {
 		new_sprite_index += 1;
-	} while (video->loaded_sprites[new_sprite_index].type != G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN && new_sprite_index <= video->config.max_loaded_sprites);
+	} while (video->loaded_sprites[new_sprite_index].base.type != G00_VIDEO_SPRITE_TYPE_BASE && new_sprite_index <= video->config.max_loaded_sprites);
 	if (new_sprite_index > video->config.max_loaded_sprites) {
 		return 1;
 	}
 
-	video->loaded_sprites[new_sprite_index].orig_surface_index = video->loaded_sprites[src_index].orig_surface_index;
-	video->loaded_sprites[new_sprite_index].processed_surface_index = video->loaded_sprites[src_index].processed_surface_index;
-	video->loaded_sprites[new_sprite_index].type = video->loaded_sprites[src_index].type;
-	video->loaded_sprites[new_sprite_index].rect = video->loaded_sprites[src_index].rect;
-	video->loaded_sprites[new_sprite_index].processing_nodes = NULL;
+	video->loaded_sprites[new_sprite_index].image.orig_surface_index = video->loaded_sprites[src_index].image.orig_surface_index;
+	video->loaded_sprites[new_sprite_index].image.processed_surface_index = video->loaded_sprites[src_index].image.processed_surface_index;
+	video->loaded_sprites[new_sprite_index].image.type = video->loaded_sprites[src_index].image.type;
+	video->loaded_sprites[new_sprite_index].image.rect = video->loaded_sprites[src_index].image.rect;
+	video->loaded_sprites[new_sprite_index].image.processing_nodes = NULL;
 	*out0_dest_index = new_sprite_index;
 
 	return 0;
 }
 
 int G00_VideoSwapSpriteTextureOrder(struct G00_Video* video, unsigned int a, unsigned int b) {
-	if (video->loaded_sprites[a].type != G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE) {
+	if (video->loaded_sprites[a].base.type != G00_VIDEO_SPRITE_TYPE_IMAGE) {
 		return 1;
 	}
 
-	if (video->loaded_sprites[b].type != G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE) {
+	if (video->loaded_sprites[b].base.type != G00_VIDEO_SPRITE_TYPE_IMAGE) {
 		return 2;
 	}
 
-	unsigned int temp = video->loaded_sprites[a].orig_surface_index;
-	video->loaded_sprites[a].orig_surface_index = video->loaded_sprites[b].orig_surface_index;
-	video->loaded_sprites[b].orig_surface_index = temp;
+	unsigned int temp = video->loaded_sprites[a].image.orig_surface_index;
+	video->loaded_sprites[a].image.orig_surface_index = video->loaded_sprites[b].image.orig_surface_index;
+	video->loaded_sprites[b].image.orig_surface_index = temp;
 
-	temp = video->loaded_sprites[a].processed_surface_index;
-	video->loaded_sprites[a].processed_surface_index = video->loaded_sprites[b].processed_surface_index;
-	video->loaded_sprites[b].processed_surface_index = temp;
+	temp = video->loaded_sprites[a].image.processed_surface_index;
+	video->loaded_sprites[a].image.processed_surface_index = video->loaded_sprites[b].image.processed_surface_index;
+	video->loaded_sprites[b].image.processed_surface_index = temp;
 
 	return 0;
 }
 
 void G00_VideoUnloadObject(struct G00_Video* video, unsigned int index) {
-	video->loaded_sprites[index].type = G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN;
-	video->loaded_sprites[index].orig_surface_index = 0;
-	video->loaded_sprites[index].processed_surface_index = 0;
-	video->loaded_sprites[index].rect = (SDL_FRect) {
-		.x = 0.f,
-		.y = 0.f,
-		.w = 0.f,
-		.h = 0.f
-	};
+	if (video->loaded_sprites[index].base.type == G00_VIDEO_SPRITE_TYPE_IMAGE) {
+		if (video->loaded_surfaces[video->loaded_sprites[index].image.orig_surface_index] != NULL) {
+			SDL_DestroySurface(video->loaded_surfaces[video->loaded_sprites[index].image.orig_surface_index]);
+			video->loaded_surfaces[video->loaded_sprites[index].image.orig_surface_index] = NULL;
+		}
+		if (video->loaded_surfaces[video->loaded_sprites[index].image.processed_surface_index] != NULL) {
+			SDL_DestroySurface(video->loaded_surfaces[video->loaded_sprites[index].image.processed_surface_index]);
+			video->loaded_surfaces[video->loaded_sprites[index].image.processed_surface_index] = NULL;
+		}
+		video->loaded_sprites[index].image.orig_surface_index = 0;
+		video->loaded_sprites[index].image.processed_surface_index = 0;
+		video->loaded_sprites[index].image.rect = (SDL_FRect) {
+			.x = 0.f,
+			.y = 0.f,
+			.w = 0.f,
+			.h = 0.f
+		};
+	}
+	video->loaded_sprites[index].base.type = G00_VIDEO_SPRITE_TYPE_BASE;
 }
 
 // int G00_VideoLoadImageFromFile(struct G00_Video* video, const char* path, unsigned int* out0_index) {
@@ -260,7 +270,7 @@ void G00_VideoUnloadObject(struct G00_Video* video, unsigned int index) {
 // 	return 1;
 // }
 
-int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, unsigned int* out0_sprite_index) {
+int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, void* cache_key, unsigned int* out0_sprite_index) {
 	for (unsigned int i = 1; i <= video->config.max_loaded_surfaces; i += 1) {
 		if (video->loaded_surfaces[i] != NULL) {
 			continue;
@@ -274,13 +284,15 @@ int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index
 		video->loaded_surfaces[i] = image;
 
 		for (unsigned int j = 1; j <= video->config.max_loaded_sprites; j += 1) {
-			if (video->loaded_sprites[j].type != G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN) {
+			if (video->loaded_sprites[j].base.type != G00_VIDEO_SPRITE_TYPE_BASE) {
 				continue;
 			}
 
-			video->loaded_sprites[j].type = G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE;
-			video->loaded_sprites[j].orig_surface_index = i;
-			video->loaded_sprites[j].processed_surface_index = i;
+			video->loaded_sprites[j].text.type = G00_VIDEO_SPRITE_TYPE_TEXT;
+			video->loaded_sprites[j].text.orig_surface_index = i;
+			video->loaded_sprites[j].text.processed_surface_index = i;
+			video->loaded_sprites[j].text.processing_nodes = NULL;
+			video->loaded_sprites[j].text.text = cache_key;
 			*out0_sprite_index = j;
 			return 0;
 		}

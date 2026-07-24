@@ -19,9 +19,10 @@ struct G00_VideoConfig {
 	unsigned char max_loaded_sprites;
 };
 
-enum G00_VideoLoadedObjectType : unsigned char {
-	G00_VIDEO_LOADED_OBJECT_TYPE_UNKNOWN,
-	G00_VIDEO_LOADED_OBJECT_TYPE_TEXTURE,
+enum G00_VideoSpriteType : unsigned char {
+	G00_VIDEO_SPRITE_TYPE_BASE,
+	G00_VIDEO_SPRITE_TYPE_IMAGE,
+	G00_VIDEO_SPRITE_TYPE_TEXT,
 };
 
 enum G00_VideoProcessingNodeType : unsigned char {
@@ -43,12 +44,31 @@ union G00_VideoProcessingNode {
 	struct G00_VideoFillColorProcessingNode fill_color;
 };
 
-struct G00_VideoSprite {
-	enum G00_VideoLoadedObjectType type;
+struct G00_VideoBaseSprite {
+	enum G00_VideoSpriteType type;
+};
+
+struct G00_VideoImageSprite {
+	enum G00_VideoSpriteType type;
 	unsigned int orig_surface_index;
 	unsigned int processed_surface_index;
 	SDL_FRect rect;
 	struct G00_ListNode* processing_nodes;
+};
+
+struct G00_VideoTextSprite {
+	enum G00_VideoSpriteType type;
+	unsigned int orig_surface_index;
+	unsigned int processed_surface_index;
+	SDL_FRect rect;
+	struct G00_ListNode* processing_nodes;
+	void* text;
+};
+
+union G00_VideoSprite {
+	struct G00_VideoBaseSprite base;
+	struct G00_VideoImageSprite image;
+	struct G00_VideoTextSprite text;
 };
 
 struct G00_Video {
@@ -59,7 +79,7 @@ struct G00_Video {
 	struct G00_App* app;
 	SDL_Surface** loaded_surfaces;
 	TTF_Font** loaded_fonts;
-	struct G00_VideoSprite* loaded_sprites;
+	union G00_VideoSprite* loaded_sprites;
 };
 
 void G00_VideoTeardown(struct G00_Video*);
@@ -84,7 +104,7 @@ int G00_VideoLoadImageSprite(struct G00_Video*, size_t, void*, unsigned int* out
 
 int G00_VideoDuplicateSprite(struct G00_Video*, unsigned int, unsigned int* out0);
 
-int G00_VideoGenerateTextSprite(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, unsigned int* out0);
+int G00_VideoGenerateTextSprite(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, void*, unsigned int* out0);
 
 void G00_VideoUnloadObject(struct G00_Video*, unsigned int);
 
