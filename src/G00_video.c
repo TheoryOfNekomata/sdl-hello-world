@@ -2,6 +2,8 @@
 
 #include "G00_video.h"
 
+#include "G00_memory.h"
+
 enum G00_VideoInitResult G00_VideoInit(struct G00_Video* video) {
 	if (!video) {
 		return G00_VIDEO_INIT_RESULT_UNKNOWN_VIDEO_STATE;
@@ -332,12 +334,15 @@ void G00_VideoUnloadObject(struct G00_Video* video, unsigned int index) {
 // 	return 1;
 // }
 
-int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, SDL_Color color, void* cache_key, unsigned int* out0_sprite_index) {
+int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index, const char* text, size_t text_len, unsigned int* out0_sprite_index) {
+	unsigned int joaat_hash = 0;
+	G00_MemoryJoaat(text, &joaat_hash);
+
 	for (unsigned int k = 1; k <= video->config.max_loaded_surfaces; k += 1) {
 		if (video->loaded_surfaces[k] == NULL) {
 			continue;
 		}
-		if (video->loaded_sprites[k].text.text == cache_key) {
+		if (video->loaded_sprites[k].text.joaat_hash == joaat_hash) {
 			*out0_sprite_index = k;
 			return 0;
 		}
@@ -348,7 +353,7 @@ int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index
 			continue;
 		}
 
-		SDL_Surface* image = TTF_RenderText_Blended(video->loaded_fonts[font_index], text, text_len, color);
+		SDL_Surface* image = TTF_RenderText_Blended(video->loaded_fonts[font_index], text, text_len, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF });
 		if (image == NULL) {
 			return -1;
 		}
@@ -364,7 +369,7 @@ int G00_VideoGenerateTextSprite(struct G00_Video* video, unsigned int font_index
 			video->loaded_sprites[j].text.orig_surface_index = i;
 			video->loaded_sprites[j].text.processed_surface_index = i;
 			video->loaded_sprites[j].text.processing_nodes = NULL;
-			video->loaded_sprites[j].text.text = cache_key;
+			video->loaded_sprites[j].text.joaat_hash = joaat_hash;
 			*out0_sprite_index = j;
 			return 0;
 		}

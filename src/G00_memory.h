@@ -29,4 +29,6 @@ void G00_MemoryTeardown(struct G00_MemoryState*);
 
 int G00_MemoryRetrieveIndex(struct G00_MemoryState*, char*, unsigned int* out0);
 
+void G00_MemoryJoaat(const char*, unsigned int* out0);
+
 #endif

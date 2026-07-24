@@ -62,7 +62,7 @@ struct G00_VideoTextSprite {
 	unsigned int processed_surface_index;
 	SDL_FRect rect;
 	struct G00_ListNode* processing_nodes;
-	void* text;
+	unsigned int joaat_hash;
 };
 
 union G00_VideoSprite {
@@ -104,7 +104,7 @@ int G00_VideoLoadImageSprite(struct G00_Video*, size_t, void*, unsigned int* out
 
 int G00_VideoDuplicateSprite(struct G00_Video*, unsigned int, unsigned int* out0);
 
-int G00_VideoGenerateTextSprite(struct G00_Video*, unsigned int, const char*, size_t, SDL_Color, void*, unsigned int* out0);
+int G00_VideoGenerateTextSprite(struct G00_Video*, unsigned int, const char*, size_t, unsigned int* out0);
 
 void G00_VideoUnloadObject(struct G00_Video*, unsigned int);
 

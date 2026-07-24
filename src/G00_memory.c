@@ -48,3 +48,19 @@ void G00_MemoryTeardown(struct G00_MemoryState* memory) {
 	free(memory->entries);
 	memory->entries = NULL;
 }
+
+void G00_MemoryJoaat(const char* str, unsigned int* out0_hash) {
+	unsigned int hash = 0;
+
+	size_t len = strlen(str);
+	for (size_t i = 0; i < len; i++) {
+		hash += str[i];
+		hash += hash << 10;
+		hash ^= hash >> 6;
+	}
+
+	hash += hash << 3;
+	hash ^= hash >> 11;
+	hash += hash << 15;
+	*out0_hash = hash;
+}

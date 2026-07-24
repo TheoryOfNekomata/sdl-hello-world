@@ -129,8 +129,6 @@ int G00_AppSetupMenu(struct G00_App* app) {
 						? node_message->fallback_value
 						: node_data->item.title,
 					13,
-					(SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF },
-					&node_data,
 					&node_data->item.sprite_index
 				);
 				if (text_sprite_load_result < 0) {
@@ -139,6 +137,15 @@ int G00_AppSetupMenu(struct G00_App* app) {
 				} if (text_sprite_load_result > 0) {
 					fprintf(stdout, "Warning: Sprite loaded abnormally.\n");
 				}
+
+				app->video.loaded_sprites[node_data->item.sprite_index].text.processing_nodes = app->ui.current_item == node_data ? &(struct G00_ListNode) {
+					.data = &(struct G00_VideoFillColorProcessingNode) {
+						.type = G00_VIDEO_PROCESSING_NODE_TYPE_FILL_COLOR,
+						.color = (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0x00, .a = 0xFF },
+					},
+					.next = NULL,
+				} : NULL;
+
 				app->video.loaded_sprites[node_data->item.sprite_index].text.rect = (SDL_FRect) {
 					.x = 100,
 					//.y = app->video.config.screen_height - ,
@@ -148,7 +155,7 @@ int G00_AppSetupMenu(struct G00_App* app) {
 				};
 				break;
 			case G00_UI_MENU_CHILD_NODE_TYPE_LABEL:
-				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, app->game_state.primary_font_index, node_data->label.title, 13, (SDL_Color) { .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF}, &node_data, &node_data->label.sprite_index);
+				text_sprite_load_result = G00_VideoGenerateTextSprite(&app->video, app->game_state.primary_font_index, node_data->label.title, 13, &node_data->label.sprite_index);
 				if (text_sprite_load_result < 0) {
 					fprintf(stderr, "Unable to load image! SDL_Error: %s\n", SDL_GetError());
 					return -1;
@@ -323,30 +330,37 @@ int G00_AppUpdate(struct G00_App* app) {
 
 			if (e.type == SDL_EVENT_KEY_DOWN) {
 				if (e.key.key == SDLK_UP) {
+					struct G00_ListNode* last_child = app->ui.current_menu->children;
+					if (last_child != NULL) {
+						while (last_child->next != NULL) {
+							last_child = last_child->next;
+						}
+					}
+
+					struct G00_ListNode* previous_child = NULL;
 					struct G00_ListNode* child = app->ui.current_menu->children;
 					while (child != NULL) {
-						if (child->next != NULL && child->next->data == app->ui.current_item) {
-							app->ui.current_item = child->data;
-							app->video.loaded_sprites[((union G00_UIMenuChildNode*) child->data)->item.sprite_index].image.rect.x = 99999;
-							continue;
+						if (child->data == app->ui.current_item) {
+							app->ui.current_item = previous_child != NULL ? previous_child->data : last_child->data;
+							break;
 						}
-						app->video.loaded_sprites[((union G00_UIMenuChildNode*) child->data)->item.sprite_index].image.rect.x = 100;
+						previous_child = child;
 						child = child->next;
 					}
 				} else if (e.key.key == SDLK_DOWN) {
-						struct G00_ListNode* child = app->ui.current_menu->children;
-						while (child != NULL) {
-							if (child->data == app->ui.current_item) {
-								if (child->next == NULL) {
-									app->ui.current_item = app->ui.current_menu->children->data;
-									break;
-								}
-								app->ui.current_item = child->next->data;
+					struct G00_ListNode* child = app->ui.current_menu->children;
+					while (child != NULL) {
+						if (child->data == app->ui.current_item) {
+							if (child->next == NULL) {
+								app->ui.current_item = app->ui.current_menu->children->data;
 								break;
 							}
-							child = child->next;
+							app->ui.current_item = child->next->data;
+							break;
 						}
+						child = child->next;
 					}
+				}
 			}
 
 			if (e.type == SDL_EVENT_MOUSE_MOTION) {
