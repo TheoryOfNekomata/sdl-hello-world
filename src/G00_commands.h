@@ -5,6 +5,7 @@
 
 G00_Command G00_XCommandHelp;
 G00_Command G00_XCommandExit;
+G00_Command G00_XCommandDo;
 
 G00_CommandMemory G00_XCommandMemoryPoolSizeBytes;
 G00_CommandMemory G00_XCommandMemoryPoolMaxEntries;
@@ -271,6 +272,20 @@ static struct G00_CommandEntry G00_COMMAND_ENTRIES[] = {
 			.minimum = 0,
 			.maximum = 0,
 			.defs = NULL,
+		},
+	},
+	{
+		.name = "do",
+		.execute_fn = G00_XCommandDo,
+		.args = {
+			.minimum = 1,
+			.maximum = 1,
+			.defs = (struct G00_CommandArgument[]){
+				{
+					.name = "action",
+					.type = G00_COMMAND_ARGUMENT_TYPE_STRING,
+				},
+			},
 		},
 	},
 	{

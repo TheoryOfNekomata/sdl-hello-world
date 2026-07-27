@@ -6,6 +6,11 @@
 #include "G00_memory.h"
 #include "G00_ui.h"
 
+enum G00_AppMode : unsigned char {
+	G00_APP_MODE_UI,
+	G00_APP_MODE_GAME,
+};
+
 struct G00_GameState {
 	unsigned int menu_bg_asset_index; // memory
 	unsigned int menu_fg_asset_index;
@@ -22,6 +27,7 @@ struct G00_GameState {
 };
 
 struct G00_App {
+	enum G00_AppMode mode;
 	sqlite3* db;
 	unsigned long long ticks;
 	struct G00_Video video;

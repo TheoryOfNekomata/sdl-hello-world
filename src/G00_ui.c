@@ -1,4 +1,5 @@
 #include "G00_ui.h"
+#include <string.h>
 
 int G00_UIInit(struct G00_UIState* state) {
 	state->messages = NULL;

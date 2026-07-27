@@ -67,3 +67,50 @@ int G00_XCommandHelp(char args[255], struct G00_CommandArgumentDefinition arg_de
 	fprintf(stderr, "Unknown command \"%s\"\n", command_name);
 	return -1;
 }
+
+int G00_XCommandDo(char args[255], struct G00_CommandArgumentDefinition arg_defs, struct G00_App* app) {
+	char action[255];
+	if (G00_CommandParseArgs(args, arg_defs, NULL, action) < 0) {
+		return -1;
+	}
+
+	if (app->mode == G00_APP_MODE_UI) {
+		if (!strcmp(action, "up")) {
+			struct G00_ListNode* last_child = app->ui.current_menu->children;
+			if (last_child != NULL) {
+				while (last_child->next != NULL) {
+					last_child = last_child->next;
+				}
+			}
+
+			if (last_child != NULL) {
+				struct G00_ListNode* previous_child = NULL;
+				struct G00_ListNode* child = app->ui.current_menu->children;
+				while (child != NULL) {
+					if (child->data == app->ui.current_item) {
+						app->ui.current_item = previous_child != NULL ? previous_child->data : last_child->data;
+						break;
+					}
+					previous_child = child;
+					child = child->next;
+				}
+			}
+		} else if (!strcmp(action, "down")) {
+			struct G00_ListNode* child = app->ui.current_menu->children;
+			while (child != NULL) {
+				if (child->data == app->ui.current_item) {
+					if (child->next == NULL) {
+						app->ui.current_item = app->ui.current_menu->children->data;
+						break;
+					}
+					app->ui.current_item = child->next->data;
+					break;
+				}
+				child = child->next;
+			}
+		}
+
+	}
+
+	return 0;
+}
