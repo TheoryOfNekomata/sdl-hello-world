@@ -329,15 +329,21 @@ int G00_AppUpdate(struct G00_App* app) {
 	while (app->flags.force_exit == false) {
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_EVENT_QUIT) {
-				app->flags.force_exit = true;
+				G00_RuntimeExecuteCommand(G00_COMMAND_ENTRIES, "exit", "", app);
 			}
 
 			if (e.type == SDL_EVENT_KEY_DOWN) {
 				if (app->mode == G00_APP_MODE_UI) {
 					if (e.key.key == SDLK_UP) {
-						// TODO execute command "do up"
+						G00_RuntimeExecuteCommand(G00_COMMAND_ENTRIES, "do", "up", app);
 					} else if (e.key.key == SDLK_DOWN) {
-						// TODO execute command "do down"
+						G00_RuntimeExecuteCommand(G00_COMMAND_ENTRIES, "do", "down", app);
+					} else if (e.key.key == SDLK_RETURN) {
+						if (app->ui.current_item != NULL && app->ui.current_item->base.type == G00_UI_MENU_CHILD_NODE_TYPE_ITEM) {
+							G00_RuntimeExecuteCommand(G00_COMMAND_ENTRIES, app->ui.current_item->item.script_commands, "", app); // TODO parse command string
+						}
+					} else if (e.key.key == SDLK_ESCAPE) {
+						G00_RuntimeExecuteCommand(G00_COMMAND_ENTRIES, "ui_menu_pop", "", app);
 					}
 				}
 			}

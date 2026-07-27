@@ -34,6 +34,9 @@ typedef int G00_CommandVideo(char*, struct G00_CommandArgumentDefinition, struct
 typedef int G00_CommandMemory(char*, struct G00_CommandArgumentDefinition, struct G00_MemoryState*);
 typedef int G00_CommandUI(char*, struct G00_CommandArgumentDefinition, struct G00_UIState*);
 
+int G00_StringIndexOf(char*, char*);
+
 int G00_CommandParseArgs(char[255], struct G00_CommandArgumentDefinition, unsigned int* out0, ...);
+int G00_RuntimeExecuteCommand(struct G00_CommandEntry[], char command[255], char args[255], struct G00_App* app);
 
 #endif
